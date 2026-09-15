@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎬 Phim Hay - TopXX</title>
+<title>🎬 Phim Hay</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -33,7 +33,7 @@
     -webkit-text-fill-color: transparent;
   }
   .search-box {
-    flex: 1; max-width: 320px; position: relative;
+    flex: 1; max-width: 320px;
   }
   .search-box input {
     width: 100%;
@@ -58,7 +58,9 @@
 @media (max-width: 480px) {
   .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .container { padding: 12px; }
-}/* CARD */
+}
+
+/* CARD */
 .card {
   background: #1a1a28;
   border-radius: 12px;
@@ -97,8 +99,7 @@
 @keyframes skeleton {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
-}
-.card-badge {
+ }.card-badge {
   position: absolute;
   top: 8px; left: 8px;
   background: rgba(255, 77, 109, 0.9);
@@ -126,7 +127,9 @@
   display: flex;
   justify-content: space-between;
 }
-.card-meta .rating { color: #ffb800; font-weight: 600; }/* LOADER / INFINITE SCROLL TRIGGER */
+.card-meta .rating { color: #ffb800; font-weight: 600; }
+
+/* LOADER */
 .sentinel { height: 40px; margin-top: 20px; }
 .loading-more {
   text-align: center;
@@ -146,15 +149,12 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* END MESSAGE */
 .end-msg {
   text-align: center;
   padding: 30px;
   color: #555;
   font-size: 14px;
 }
-
-/* ERROR */
 .error-box {
   text-align: center;
   padding: 40px 20px;
@@ -170,25 +170,25 @@
   font-size: 14px;
   cursor: pointer;
   font-weight: 600;
-}
+ }  /* TOP BUTTON */
+  #topBtn {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: #ff4d6d;
+    color: #fff;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: none;
+    box-shadow: 0 4px 16px rgba(255, 77, 109, 0.5);
+    z-index: 99;
+    transition: transform .2s;
+  }
+  #topBtn:hover { transform: scale(1.1); }
 
-/* TOP BUTTON */
-#topBtn {
-  position: fixed;
-  bottom: 24px; right: 24px;
-  width: 46px; height: 46px;
-  border-radius: 50%;
-  background: #ff4d6d;
-  color: #fff;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  display: none;
-  box-shadow: 0 4px 16px rgba(255, 77, 109, 0.5);
-  z-index: 99;
-  transition: transform .2s;
-}
-#topBtn:hover { transform: scale(1.1); }  /* MODAL */
+  /* MODAL */
   .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.85);
@@ -255,9 +255,11 @@
   </div>
 </div><script>
 /* ============================================
-   CẤU HÌNH API
+   CẤU HÌNH API - KKPhim (miễn phí, mở CORS)
 ============================================ */
-const API_BASE = 'https://topxx.vip/api/v1/movies/today';
+const API_LIST   = 'https://phimapi.com/danh-sach/phim-moi-cap-nhat';
+const API_SEARCH = 'https://phimapi.com/v1/api/tim-kiem';
+const API_DETAIL = 'https://phimapi.com/phim';
 
 /* ============================================
    STATE
@@ -277,16 +279,29 @@ async function fetchMovies(page = 1, search = '') {
   const key = `${page}::${search}`;
   if (cache.has(key)) return cache.get(key);
 
-  const params = new URLSearchParams({ page });
-  if (search) params.append('search', search);
+  let movies = [], curPage = page, totalPages = 1;
 
-  const url = `${API_BASE}?${params.toString()}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
+  if (search) {
+    const url = `${API_SEARCH}?keyword=${encodeURIComponent(search)}&page=${page}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    movies = json?.data?.items || [];
+    curPage = json?.data?.pagination?.currentPage || page;
+    totalPages = json?.data?.pagination?.totalPages || 1;
+  } else {
+    const url = `${API_LIST}?page=${page}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    movies = json?.items || [];
+    curPage = json?.pagination?.currentPage || page;
+    totalPages = json?.pagination?.totalPages || 1;
+  }
 
-  cache.set(key, json);
-  return json;
+  const result = { movies, currentPage: curPage, lastPage: totalPages };
+  cache.set(key, result);
+  return result;
 }/* ============================================
    RENDER CARD
 ============================================ */
@@ -294,22 +309,21 @@ function createCard(movie) {
   const card = document.createElement('div');
   card.className = 'card';
 
-  const title = movie.title || movie.name || movie.original_title || 'Không có tên';
-  const poster = movie.poster || movie.poster_url || movie.thumb || movie.image || '';
-  const year = movie.year || movie.release_date?.slice(0, 4) || '';
-  const rating = movie.rating || movie.vote_average || movie.score || '';
-  const quality = movie.quality || movie.episode || '';
+  const title   = movie.name || movie.title || 'Không có tên';
+  const poster  = movie.poster_url || movie.thumb_url || '';
+  const year    = movie.year || '';
+  const quality = movie.quality || movie.lang || '';
 
   card.innerHTML = `
     <div class="card-img-wrap">
       ${quality ? `<div class="card-badge">${quality}</div>` : ''}
-      <img data-src="${poster}" alt="${title}" loading="lazy">
+      <img alt="${title}" loading="lazy">
     </div>
     <div class="card-info">
       <div class="card-title">${title}</div>
       <div class="card-meta">
         <span>${year}</span>
-        ${rating ? `<span class="rating">⭐ ${rating}</span>` : ''}
+        <span class="rating">${movie.episode_current || ''}</span>
       </div>
     </div>
   `;
@@ -336,7 +350,7 @@ function renderMovies(movies, append = false) {
   const grid = document.getElementById('grid');
   if (!append) grid.innerHTML = '';
   movies.forEach(m => grid.appendChild(createCard(m)));
-  }/* ============================================
+}/* ============================================
    LOAD TRANG
 ============================================ */
 async function loadPage(page = 1, reset = false) {
@@ -355,14 +369,13 @@ async function loadPage(page = 1, reset = false) {
 
   try {
     const data = await fetchMovies(page, keyword);
-    const movies = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
-    const meta = data?.meta || {};
+    const movies = data.movies || [];
 
     if (movies.length === 0 && page === 1) {
       statusEl.innerHTML = `
         <div class="error-box">
-          ⚠️ API chưa trả về dữ liệu.<br>
-          <small style="color:#888">Kiểm tra lại endpoint hoặc thử lại sau.</small>
+          ⚠️ Không tìm thấy phim nào.<br>
+          <small style="color:#888">Thử từ khóa khác hoặc tải lại trang.</small>
         </div>`;
       hasMore = false;
       isLoading = false;
@@ -372,8 +385,8 @@ async function loadPage(page = 1, reset = false) {
     renderMovies(movies, !reset);
     allMovies = allMovies.concat(movies);
 
-    lastPage = meta.last_page || 1;
-    currentPage = meta.current_page || page;
+    lastPage = data.lastPage || 1;
+    currentPage = data.currentPage || page;
 
     if (currentPage >= lastPage || movies.length === 0) {
       hasMore = false;
@@ -396,9 +409,7 @@ async function loadPage(page = 1, reset = false) {
 function retry() {
   hasMore = true;
   loadPage(currentPage + 1, false);
-}
-
-/* ============================================
+}/* ============================================
    INFINITE SCROLL
 ============================================ */
 const sentinel = document.getElementById('sentinel');
@@ -409,11 +420,14 @@ const observer = new IntersectionObserver((entries) => {
     }
   });
 }, { rootMargin: '300px' });
-observer.observe(sentinel);/* ============================================
+observer.observe(sentinel);
+
+/* ============================================
    SEARCH
 ============================================ */
 const searchInput = document.getElementById('searchInput');
 let searchTimeout;
+
 searchInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     clearTimeout(searchTimeout);
@@ -421,6 +435,7 @@ searchInput.addEventListener('keydown', (e) => {
     loadPage(1, true);
   }
 });
+
 searchInput.addEventListener('input', () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
@@ -430,35 +445,64 @@ searchInput.addEventListener('input', () => {
       loadPage(1, true);
     }
   }, 600);
-});
-
-/* ============================================
+});/* ============================================
    MODAL CHI TIẾT
 ============================================ */
-function openModal(movie) {
-  const title = movie.title || movie.name || 'Không có tên';
-  const poster = movie.poster || movie.poster_url || movie.thumb || movie.image || '';
-  const desc = movie.overview || movie.description || movie.content || 'Chưa có mô tả.';
-  const year = movie.year || movie.release_date?.slice(0, 4) || '—';
-  const rating = movie.rating || movie.vote_average || '—';
+async function openModal(movie) {
+  const overlay = document.getElementById('modal');
+  const body = document.getElementById('modalBody');
+  overlay.classList.add('show');
 
-  document.getElementById('modalBody').innerHTML = `
-    <img src="${poster}" alt="${title}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22300%22><rect fill=%22%2325253a%22 width=%22200%22 height=%22300%22/></svg>'">
+  const title  = movie.name || movie.title || 'Không có tên';
+  const poster = movie.poster_url || movie.thumb_url || '';
+  const year   = movie.year || '—';
+
+  body.innerHTML = `
+    <img src="${poster}" alt="${title}">
     <div class="modal-info">
       <h2>${title}</h2>
       <p><strong>Năm:</strong> ${year}</p>
-      <p><strong>Đánh giá:</strong> ⭐ ${rating}</p>
-      <p style="margin-top:12px">${desc}</p>
+      <p><span class="spinner"></span>Đang tải chi tiết...</p>
     </div>
   `;
-  document.getElementById('modal').classList.add('show');
+
+  if (!movie.slug) return;
+
+  try {
+    const res = await fetch(`${API_DETAIL}/${movie.slug}`);
+    const json = await res.json();
+    const m = json?.movie || {};
+    const desc = (m.content || '').replace(/<[^>]+>/g, '').slice(0, 600) || 'Chưa có mô tả.';
+    const actor = (m.actor || []).slice(0, 6).join(', ') || '—';
+    const director = (m.director || []).join(', ') || '—';
+    const country = (m.country || []).map(c => c.name).join(', ') || '—';
+    const category = (m.category || []).map(c => c.name).join(', ') || '—';
+
+    body.innerHTML = `
+      <img src="${poster}" alt="${title}">
+      <div class="modal-info">
+        <h2>${title}</h2>
+        <p><strong>Năm:</strong> ${year}</p>
+        <p><strong>Thể loại:</strong> ${category}</p>
+        <p><strong>Quốc gia:</strong> ${country}</p>
+        <p><strong>Đạo diễn:</strong> ${director}</p>
+        <p><strong>Diễn viên:</strong> ${actor}</p>
+        <p style="margin-top:12px">${desc}...</p>
+      </div>
+    `;
+  } catch (e) {
+    console.error(e);
+  }
 }
+
 function closeModal() {
   document.getElementById('modal').classList.remove('show');
 }
+
 document.getElementById('modal').onclick = (e) => {
   if (e.target.id === 'modal') closeModal();
 };
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
 });
@@ -473,6 +517,7 @@ window.addEventListener('scroll', () => {
 topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });/* ============================================
    KHỞI ĐỘNG
 ============================================ */
+console.log('🚀 Web phim KKPhim đang chạy...');
 loadPage(1, true);
 </script>
 
