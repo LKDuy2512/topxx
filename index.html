@@ -23,11 +23,10 @@
     position: sticky; top: 0; z-index: 100;
     background: rgba(15, 15, 23, 0.95);
     backdrop-filter: blur(10px);
-    padding: 14px 20px;
+    padding: 12px 20px;
     border-bottom: 1px solid #1f1f2e;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
   }
@@ -36,8 +35,54 @@
     background: linear-gradient(135deg, #ff4d6d, #ff9500);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    white-space: nowrap;
   }
-  .search-box { flex: 1; max-width: 320px; position: relative; }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    gap: 6px;
+    background: #1a1a28;
+    padding: 4px;
+    border-radius: 10px;
+  }
+  .nav-tab {
+    padding: 8px 14px;
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: #fff; }
+  .nav-tab.active {
+    background: #ff4d6d;
+    color: #fff;
+  }
+  .nav-tab .badge {
+    display: inline-block;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+  }
+  .nav-tab.active .badge { background: rgba(255,255,255,0.35); }
+  .nav-tab .badge:empty,
+  .nav-tab .badge[data-count="0"] { display: none; }
+
+  .search-box { flex: 1; max-width: 320px; margin-left: auto; position: relative; }
   .search-box input {
     width: 100%;
     padding: 10px 34px 10px 14px;
@@ -58,7 +103,14 @@
     font-size: 16px; padding: 4px;
     display: none;
   }
-  .search-box.has-value .clear-btn { display: block; }/* SEARCH INFO */
+  .search-box.has-value .clear-btn { display: block; }
+
+  @media (max-width: 600px) {
+    .logo { font-size: 16px; }
+    .nav-tab { padding: 7px 10px; font-size: 12px; }
+    .nav-tab .tab-text { display: none; }
+    .nav-tab.active .tab-text { display: inline; }
+  }/* SEARCH INFO */
 .search-info {
   display: none;
   padding: 12px 0 4px;
@@ -81,42 +133,52 @@
 }
 .search-info button:hover { border-color: #ff4d6d; color: #fff; }
 
-/* HISTORY SECTION */
-.history-section {
-  display: none;
-  margin-bottom: 24px;
-}
-.history-section.show { display: block; }
+/* SECTION HEADER */
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 .section-header h2 {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #fff;
 }
 .section-header .clear-history {
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 12px;
+  background: #25253a;
+  border: 1px solid #2a2a3e;
+  color: #ccc;
+  font-size: 13px;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: all .2s;
 }
-.section-header .clear-history:hover { color: #ff4d6d; }
-.history-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
+.section-header .clear-history:hover {
+  border-color: #ff4d6d;
+  color: #ff4d6d;
 }
+
+/* VIEWS */
+#historyView { display: none; }
+#historyView.show { display: block; }
+#homeView.hide { display: none; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #666;
+}
+.empty-state .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+.empty-state h3 { color: #888; font-size: 18px; margin-bottom: 8px; }
+.empty-state p { font-size: 14px; }
 
 /* CONTAINER */
 .container { padding: 20px; max-width: 1400px; margin: 0 auto; }
 
-.grid {
+.grid, .history-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 16px;
@@ -193,11 +255,6 @@
   justify-content: space-between;
 }
 .card-meta .duration { color: #ffb800; font-weight: 600; }
-
-/* HISTORY CARD (nhỏ hơn) */
-.history-grid .card .card-title { font-size: 12px; min-height: 30px; }
-.history-grid .card .card-info { padding: 8px; }
-.history-grid .card .card-meta { font-size: 10px; }
 
 .sentinel { height: 40px; margin-top: 20px; }
 .loading-more {
@@ -376,6 +433,17 @@
 
 <header>
   <div class="logo">🎬 PHIM HAY</div>
+
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-view="home" onclick="switchView('home')">
+      <span>🏠</span><span class="tab-text">Trang chủ</span>
+    </button>
+    <button class="nav-tab" data-view="history" onclick="switchView('history')">
+      <span>🕒</span><span class="tab-text">Lịch sử</span>
+      <span class="badge" id="historyBadge" data-count="0"></span>
+    </button>
+  </nav>
+
   <div class="search-box" id="searchBox">
     <input type="text" id="searchInput" placeholder="Tìm phim... (Enter để tìm)">
     <button class="clear-btn" id="clearBtn" title="Xóa">✕</button>
@@ -384,25 +452,26 @@
 
 <div class="container">
 
-  <!-- LỊCH SỬ XEM -->
-  <section class="history-section" id="historySection">
+  <!-- VIEW TRANG CHỦ -->
+  <div id="homeView">
+    <div class="search-info" id="searchInfo">
+      <span>Kết quả cho: <b id="searchKeyword"></b> — <span id="searchCount"></span> phim</span>
+      <button onclick="clearSearch()">Xóa tìm kiếm</button>
+    </div>
+    <div id="grid" class="grid"></div>
+    <div id="sentinel" class="sentinel"></div>
+    <div id="status" class="loading-more"></div>
+  </div>
+
+  <!-- VIEW LỊCH SỬ -->
+  <div id="historyView">
     <div class="section-header">
       <h2>🕒 Đã xem gần đây</h2>
       <button class="clear-history" onclick="clearHistory()">Xóa lịch sử</button>
     </div>
     <div class="history-grid" id="historyGrid"></div>
-  </section>
-
-  <!-- KẾT QUẢ TÌM KIẾM -->
-  <div class="search-info" id="searchInfo">
-    <span>Kết quả cho: <b id="searchKeyword"></b> — <span id="searchCount"></span> phim</span>
-    <button onclick="clearSearch()">Xóa tìm kiếm</button>
   </div>
 
-  <!-- DANH SÁCH PHIM -->
-  <div id="grid" class="grid"></div>
-  <div id="sentinel" class="sentinel"></div>
-  <div id="status" class="loading-more"></div>
 </div>
 
 <button id="topBtn" title="Lên đầu trang">↑</button>
@@ -420,8 +489,8 @@ const API_BASE = 'https://topxx.vip/api/v1/movies/latest';
 const PER_PAGE = 12;
 const PROXY_TIMEOUT = 6000;
 const CACHE_TTL = 5 * 60 * 1000;
-const SEARCH_PAGES = 5;   // số trang tải để search client-side
-const HISTORY_MAX = 12;   // số phim lưu lịch sử
+const SEARCH_PAGES = 5;
+const HISTORY_MAX = 24;
 
 const PROXIES = [
   (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -440,6 +509,7 @@ let hasMore = true;
 let allMovies = [];
 let keyword = '';
 let searchMode = false;
+let currentView = 'home';   // 'home' | 'history'
 const cache = new Map();
 
 let workingProxyIdx = parseInt(localStorage.getItem('workingProxyIdx') ?? '-1');
@@ -539,21 +609,12 @@ async function fetchOnePage(page) {
   throw lastErr || new Error('Tất cả proxy đều thất bại');
 }
 
-/* ============================================
-   FETCH MOVIES (normal hoặc search)
-============================================ */
 async function fetchMovies(page = 1, search = '') {
-  // Chế độ tìm kiếm: tải song song nhiều trang + filter client-side
-  if (search) {
-    const data = await fetchOnePage(page);
-    return data;
-  }
-  // Chế độ thường
   return await fetchOnePage(page);
 }
 
 /* ============================================
-   SEARCH CLIENT-SIDE — tải nhiều trang và filter
+   SEARCH CLIENT-SIDE
 ============================================ */
 async function searchMovies(kw) {
   const needle = kw.toLowerCase().trim();
@@ -561,14 +622,12 @@ async function searchMovies(kw) {
 
   console.log(`🔍 Đang tải ${SEARCH_PAGES} trang để tìm "${kw}"...`);
 
-  // Tải song song nhiều trang
   const promises = [];
   for (let i = 1; i <= SEARCH_PAGES; i++) {
     promises.push(fetchOnePage(i).catch(() => ({ movies: [] })));
   }
   const results = await Promise.all(promises);
 
-  // Gộp và filter theo title
   const all = [];
   const seen = new Set();
   results.forEach(r => {
@@ -608,7 +667,7 @@ function renderSkeleton(count = 8) {
 /* ============================================
    CREATE CARD
 ============================================ */
-function createCard(movie, small = false) {
+function createCard(movie) {
   const card = document.createElement('div');
   card.className = 'card';
 
@@ -647,9 +706,6 @@ function createCard(movie, small = false) {
   return card;
 }
 
-/* ============================================
-   RENDER GRID
-============================================ */
 function renderMovies(movies, append = false) {
   const grid = document.getElementById('grid');
   if (!append) grid.innerHTML = '';
@@ -681,39 +737,75 @@ function saveHistory(movie) {
     viewedAt: Date.now()
   };
   let list = getHistory();
-  // Xóa entry cũ nếu trùng code
   list = list.filter(m => m.code !== entry.code);
-  // Thêm lên đầu
   list.unshift(entry);
-  // Giới hạn
   list = list.slice(0, HISTORY_MAX);
   try {
     localStorage.setItem('watchHistory', JSON.stringify(list));
   } catch {}
-  renderHistory();
+  updateHistoryBadge();
+}
+
+function updateHistoryBadge() {
+  const count = getHistory().length;
+  const badge = document.getElementById('historyBadge');
+  badge.textContent = count;
+  badge.setAttribute('data-count', count);
 }
 
 function renderHistory() {
   const list = getHistory();
-  const section = document.getElementById('historySection');
   const grid = document.getElementById('historyGrid');
+  grid.innerHTML = '';
 
   if (list.length === 0) {
-    section.classList.remove('show');
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="icon">🕒</div>
+        <h3>Chưa có lịch sử xem</h3>
+        <p>Những phim bạn xem sẽ xuất hiện ở đây.</p>
+      </div>`;
+    updateHistoryBadge();
     return;
   }
 
-  section.classList.add('show');
-  grid.innerHTML = '';
   const frag = document.createDocumentFragment();
-  list.forEach(m => frag.appendChild(createCard(m, true)));
+  list.forEach(m => frag.appendChild(createCard(m)));
   grid.appendChild(frag);
+  updateHistoryBadge();
 }
 
 function clearHistory() {
   if (!confirm('Xóa toàn bộ lịch sử xem?')) return;
   localStorage.removeItem('watchHistory');
   renderHistory();
+}
+
+/* ============================================
+   SWITCH VIEW (Trang chủ <-> Lịch sử)
+============================================ */
+function switchView(view) {
+  currentView = view;
+
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.view === view);
+  });
+
+  const homeView = document.getElementById('homeView');
+  const historyView = document.getElementById('historyView');
+  const searchBox = document.getElementById('searchBox');
+
+  if (view === 'history') {
+    homeView.classList.add('hide');
+    historyView.classList.add('show');
+    searchBox.style.display = 'none';
+    renderHistory();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    historyView.classList.remove('show');
+    homeView.classList.remove('hide');
+    searchBox.style.display = '';
+  }
 }/* ============================================
    LOAD TRANG
 ============================================ */
@@ -782,10 +874,13 @@ async function doSearch(kw) {
   kw = kw.trim();
   if (!kw) { clearSearch(); return; }
 
+  // Nếu đang ở view lịch sử thì quay về trang chủ
+  if (currentView !== 'home') switchView('home');
+
   keyword = kw;
   searchMode = true;
   isLoading = true;
-  hasMore = false; // tắt infinite scroll khi đang search
+  hasMore = false;
 
   const statusEl = document.getElementById('status');
   const searchInfo = document.getElementById('searchInfo');
@@ -842,7 +937,11 @@ function clearSearch() {
 const sentinel = document.getElementById('sentinel');
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
-    if (entry.isIntersecting && hasMore && !isLoading && !searchMode) {
+    if (entry.isIntersecting
+        && hasMore
+        && !isLoading
+        && !searchMode
+        && currentView === 'home') {
       loadPage(currentPage + 1, false);
     }
   });
@@ -996,6 +1095,9 @@ function closeModal() {
   const body = document.getElementById('modalBody');
   setTimeout(() => { body.innerHTML = ''; }, 250);
   document.querySelector('.modal').classList.remove('wide');
+
+  // Nếu đang ở view lịch sử, refresh để cập nhật thứ tự
+  if (currentView === 'history') renderHistory();
 }
 
 document.getElementById('modal').onclick = (e) => {
@@ -1016,8 +1118,8 @@ topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });/* ======
    KHỞI ĐỘNG
 ============================================ */
 console.log('🚀 Web phim TopXX đang chạy...');
+updateHistoryBadge();
 renderSkeleton(8);
-renderHistory();     // hiện lịch sử xem ngay khi vào
 loadPage(1, true);
 </script>
 
