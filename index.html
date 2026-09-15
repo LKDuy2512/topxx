@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎬 Phim Hay</title>
+<title>🎬 Phim Hay - TopXX</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -99,7 +99,7 @@
 @keyframes skeleton {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
- }.card-badge {
+}.card-badge {
   position: absolute;
   top: 8px; left: 8px;
   background: rgba(255, 77, 109, 0.9);
@@ -127,7 +127,7 @@
   display: flex;
   justify-content: space-between;
 }
-.card-meta .rating { color: #ffb800; font-weight: 600; }
+.card-meta .duration { color: #ffb800; font-weight: 600; }
 
 /* LOADER */
 .sentinel { height: 40px; margin-top: 20px; }
@@ -225,6 +225,16 @@
   .modal-body img { width: 200px; border-radius: 10px; flex-shrink: 0; }
   .modal-info h2 { margin-bottom: 10px; font-size: 22px; }
   .modal-info p { color: #aaa; font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+  .modal-info .btn-watch {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 10px 24px;
+    background: #ff4d6d;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+  }
   @media (max-width: 600px) {
     .modal-body { flex-direction: column; }
     .modal-body img { width: 100%; max-width: 220px; margin: 0 auto; }
@@ -255,11 +265,9 @@
   </div>
 </div><script>
 /* ============================================
-   CẤU HÌNH API - KKPhim (miễn phí, mở CORS)
+   CẤU HÌNH API - topxx.vip
 ============================================ */
-const API_LIST   = 'https://phimapi.com/danh-sach/phim-moi-cap-nhat';
-const API_SEARCH = 'https://phimapi.com/v1/api/tim-kiem';
-const API_DETAIL = 'https://phimapi.com/phim';
+const API_BASE = 'https://topxx.vip/api/v1/movies/today';
 
 /* ============================================
    STATE
@@ -279,27 +287,33 @@ async function fetchMovies(page = 1, search = '') {
   const key = `${page}::${search}`;
   if (cache.has(key)) return cache.get(key);
 
-  let movies = [], curPage = page, totalPages = 1;
+  const params = new URLSearchParams({ page });
+  if (search) params.append('search', search);
 
-  if (search) {
-    const url = `${API_SEARCH}?keyword=${encodeURIComponent(search)}&page=${page}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    movies = json?.data?.items || [];
-    curPage = json?.data?.pagination?.currentPage || page;
-    totalPages = json?.data?.pagination?.totalPages || 1;
-  } else {
-    const url = `${API_LIST}?page=${page}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    movies = json?.items || [];
-    curPage = json?.pagination?.currentPage || page;
-    totalPages = json?.pagination?.totalPages || 1;
-  }
+  const url = `${API_BASE}?${params.toString()}`;
 
-  const result = { movies, currentPage: curPage, lastPage: totalPages };
+  const res = await fetch(url, {
+    headers: {
+      'Accept': 'application/json'
+      // Nếu API yêu cầu, thêm 'Referer' hoặc 'Authorization' tại đây
+    }
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+
+  const movies = Array.isArray(json?.data) ? json.data : [];
+  const meta = json?.meta || {};
+  const links = json?.links || {};
+
+  const result = {
+    movies,
+    currentPage: meta.current_page || page,
+    lastPage: meta.last_page || (links.next ? page + 1 : page),
+    total: meta.total || 0,
+    hasNext: !!links.next
+  };
+
   cache.set(key, result);
   return result;
 }/* ============================================
@@ -309,10 +323,12 @@ function createCard(movie) {
   const card = document.createElement('div');
   card.className = 'card';
 
-  const title   = movie.name || movie.title || 'Không có tên';
-  const poster  = movie.poster_url || movie.thumb_url || '';
-  const year    = movie.year || '';
-  const quality = movie.quality || movie.lang || '';
+  // Lấy thông tin từ cấu trúc API topxx.vip
+  const trans   = movie.trans?.[0] || {};
+  const title   = trans.title || movie.code || 'Không có tên';
+  const poster  = movie.thumbnail || '';
+  const quality = movie.quality || '';
+  const duration = movie.duration || '';
 
   card.innerHTML = `
     <div class="card-img-wrap">
@@ -322,8 +338,8 @@ function createCard(movie) {
     <div class="card-info">
       <div class="card-title">${title}</div>
       <div class="card-meta">
-        <span>${year}</span>
-        <span class="rating">${movie.episode_current || ''}</span>
+        <span>${duration}</span>
+        <span class="duration">${quality}</span>
       </div>
     </div>
   `;
@@ -350,7 +366,7 @@ function renderMovies(movies, append = false) {
   const grid = document.getElementById('grid');
   if (!append) grid.innerHTML = '';
   movies.forEach(m => grid.appendChild(createCard(m)));
-}/* ============================================
+     }/* ============================================
    LOAD TRANG
 ============================================ */
 async function loadPage(page = 1, reset = false) {
@@ -374,7 +390,7 @@ async function loadPage(page = 1, reset = false) {
     if (movies.length === 0 && page === 1) {
       statusEl.innerHTML = `
         <div class="error-box">
-          ⚠️ Không tìm thấy phim nào.<br>
+          ⚠️ Không có phim nào.<br>
           <small style="color:#888">Thử từ khóa khác hoặc tải lại trang.</small>
         </div>`;
       hasMore = false;
@@ -388,9 +404,9 @@ async function loadPage(page = 1, reset = false) {
     lastPage = data.lastPage || 1;
     currentPage = data.currentPage || page;
 
-    if (currentPage >= lastPage || movies.length === 0) {
+    if (!data.hasNext || currentPage >= lastPage || movies.length === 0) {
       hasMore = false;
-      statusEl.innerHTML = `<div class="end-msg">— Đã hiển thị tất cả ${allMovies.length} phim —</div>`;
+      statusEl.innerHTML = `<div class="end-msg">— Đã hiển thị ${allMovies.length} phim —</div>`;
     } else {
       statusEl.innerHTML = '';
     }
@@ -448,51 +464,31 @@ searchInput.addEventListener('input', () => {
 });/* ============================================
    MODAL CHI TIẾT
 ============================================ */
-async function openModal(movie) {
-  const overlay = document.getElementById('modal');
-  const body = document.getElementById('modalBody');
-  overlay.classList.add('show');
+function openModal(movie) {
+  const trans = movie.trans?.[0] || {};
+  const title = trans.title || movie.code || 'Không có tên';
+  const desc = trans.description || 'Chưa có mô tả.';
+  const poster = movie.thumbnail || '';
+  const quality = movie.quality || '—';
+  const duration = movie.duration || '—';
+  const genres = (movie.genres || []).map(g => g.trans?.[0]?.name).filter(Boolean).join(', ') || '—';
 
-  const title  = movie.name || movie.title || 'Không có tên';
-  const poster = movie.poster_url || movie.thumb_url || '';
-  const year   = movie.year || '—';
+  // Link xem phim từ sources
+  const source = movie.sources?.[0] || {};
+  const watchLink = source.link || '';
 
-  body.innerHTML = `
-    <img src="${poster}" alt="${title}">
+  document.getElementById('modalBody').innerHTML = `
+    <img src="${poster}" alt="${title}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22300%22><rect fill=%22%2325253a%22 width=%22200%22 height=%22300%22/></svg>'">
     <div class="modal-info">
       <h2>${title}</h2>
-      <p><strong>Năm:</strong> ${year}</p>
-      <p><span class="spinner"></span>Đang tải chi tiết...</p>
+      <p><strong>Chất lượng:</strong> ${quality}</p>
+      <p><strong>Thời lượng:</strong> ${duration}</p>
+      <p><strong>Thể loại:</strong> ${genres}</p>
+      <p style="margin-top:12px">${desc}</p>
+      ${watchLink ? `<a class="btn-watch" href="${watchLink}" target="_blank" rel="noopener">▶ Xem phim</a>` : ''}
     </div>
   `;
-
-  if (!movie.slug) return;
-
-  try {
-    const res = await fetch(`${API_DETAIL}/${movie.slug}`);
-    const json = await res.json();
-    const m = json?.movie || {};
-    const desc = (m.content || '').replace(/<[^>]+>/g, '').slice(0, 600) || 'Chưa có mô tả.';
-    const actor = (m.actor || []).slice(0, 6).join(', ') || '—';
-    const director = (m.director || []).join(', ') || '—';
-    const country = (m.country || []).map(c => c.name).join(', ') || '—';
-    const category = (m.category || []).map(c => c.name).join(', ') || '—';
-
-    body.innerHTML = `
-      <img src="${poster}" alt="${title}">
-      <div class="modal-info">
-        <h2>${title}</h2>
-        <p><strong>Năm:</strong> ${year}</p>
-        <p><strong>Thể loại:</strong> ${category}</p>
-        <p><strong>Quốc gia:</strong> ${country}</p>
-        <p><strong>Đạo diễn:</strong> ${director}</p>
-        <p><strong>Diễn viên:</strong> ${actor}</p>
-        <p style="margin-top:12px">${desc}...</p>
-      </div>
-    `;
-  } catch (e) {
-    console.error(e);
-  }
+  document.getElementById('modal').classList.add('show');
 }
 
 function closeModal() {
@@ -517,7 +513,7 @@ window.addEventListener('scroll', () => {
 topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });/* ============================================
    KHỞI ĐỘNG
 ============================================ */
-console.log('🚀 Web phim KKPhim đang chạy...');
+console.log('🚀 Web phim TopXX đang chạy...');
 loadPage(1, true);
 </script>
 
