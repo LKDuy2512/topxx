@@ -14,21 +14,15 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #0f0f17;
-    color: #fff;
-    min-height: 100vh;
+    background: #0f0f17; color: #fff; min-height: 100vh;
   }
-
   header {
     position: sticky; top: 0; z-index: 100;
     background: rgba(15, 15, 23, 0.95);
     backdrop-filter: blur(10px);
     padding: 12px 20px;
     border-bottom: 1px solid #1f1f2e;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   }
   .logo {
     font-size: 20px; font-weight: 700;
@@ -37,126 +31,75 @@
     -webkit-text-fill-color: transparent;
     white-space: nowrap;
   }
-
   .nav-tabs {
-    display: flex;
-    gap: 6px;
-    background: #1a1a28;
-    padding: 4px;
-    border-radius: 10px;
+    display: flex; gap: 6px;
+    background: #1a1a28; padding: 4px; border-radius: 10px;
   }
   .nav-tab {
-    padding: 8px 14px;
-    background: transparent;
-    border: none;
-    color: #aaa;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 8px;
+    padding: 8px 14px; background: transparent; border: none;
+    color: #aaa; font-size: 13px; font-weight: 600;
+    cursor: pointer; border-radius: 8px;
     transition: all .2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+    display: flex; align-items: center; gap: 6px; white-space: nowrap;
   }
   .nav-tab:hover { color: #fff; }
   .nav-tab.active { background: #ff4d6d; color: #fff; }
   .nav-tab .badge {
-    display: inline-block;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 9px;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 18px;
-    text-align: center;
+    display: inline-block; min-width: 18px; height: 18px; padding: 0 5px;
+    background: rgba(255,255,255,0.25); border-radius: 9px;
+    font-size: 10px; font-weight: 700; line-height: 18px; text-align: center;
   }
   .nav-tab.active .badge { background: rgba(255,255,255,0.35); }
   .nav-tab .badge[data-count="0"] { display: none; }
-
   .search-box { flex: 1; max-width: 320px; margin-left: auto; position: relative; }
   .search-box input {
-    width: 100%;
-    padding: 10px 34px 10px 14px;
-    background: #1a1a28;
-    border: 1px solid #2a2a3e;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 14px;
-    outline: none;
-    transition: border .2s;
+    width: 100%; padding: 10px 34px 10px 14px;
+    background: #1a1a28; border: 1px solid #2a2a3e;
+    border-radius: 10px; color: #fff; font-size: 14px;
+    outline: none; transition: border .2s;
   }
   .search-box input:focus { border-color: #ff4d6d; }
   .search-box .clear-btn {
-    position: absolute; right: 8px; top: 50%;
-    transform: translateY(-50%);
-    background: none; border: none;
-    color: #888; cursor: pointer;
-    font-size: 16px; padding: 4px;
-    display: none;
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #888; cursor: pointer;
+    font-size: 16px; padding: 4px; display: none;
   }
   .search-box.has-value .clear-btn { display: block; }
-
   @media (max-width: 600px) {
     .logo { font-size: 16px; }
     .nav-tab { padding: 7px 10px; font-size: 12px; }
     .nav-tab .tab-text { display: none; }
     .nav-tab.active .tab-text { display: inline; }
   }.search-info {
-  display: none;
-  padding: 12px 0 4px;
-  color: #888;
-  font-size: 14px;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  display: none; padding: 12px 0 4px; color: #888; font-size: 14px;
+  align-items: center; gap: 8px; flex-wrap: wrap;
 }
 .search-info.show { display: flex; }
 .search-info b { color: #ff4d6d; }
 .search-info button {
-  padding: 4px 10px;
-  background: #25253a;
-  border: 1px solid #2a2a3e;
-  border-radius: 6px;
-  color: #ccc;
-  cursor: pointer;
-  font-size: 12px;
+  padding: 4px 10px; background: #25253a; border: 1px solid #2a2a3e;
+  border-radius: 6px; color: #ccc; cursor: pointer; font-size: 12px;
 }
 .search-info button:hover { border-color: #ff4d6d; color: #fff; }
-
 .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 16px;
 }
-.section-header h2 { font-size: 18px; font-weight: 600; color: #fff; }
+.section-header h2 { font-size: 18px; font-weight: 600; }
 .section-header .clear-history {
-  background: #25253a;
-  border: 1px solid #2a2a3e;
-  color: #ccc;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: all .2s;
+  background: #25253a; border: 1px solid #2a2a3e;
+  color: #ccc; font-size: 13px; cursor: pointer;
+  padding: 6px 14px; border-radius: 8px; transition: all .2s;
 }
 .section-header .clear-history:hover { border-color: #ff4d6d; color: #ff4d6d; }
-
 #historyView { display: none; }
 #historyView.show { display: block; }
 #homeView.hide { display: none; }
-
 .empty-state { text-align: center; padding: 80px 20px; color: #666; }
 .empty-state .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
 .empty-state h3 { color: #888; font-size: 18px; margin-bottom: 8px; }
 .empty-state p { font-size: 14px; }
-
 .container { padding: 20px; max-width: 1400px; margin: 0 auto; }
-
 .grid, .history-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -166,13 +109,9 @@
   .grid, .history-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .container { padding: 12px; }
 }
-
 .card {
-  background: #1a1a28;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform .25s, box-shadow .25s;
+  background: #1a1a28; border-radius: 12px; overflow: hidden;
+  cursor: pointer; transition: transform .25s, box-shadow .25s;
   position: relative;
 }
 .card:hover {
@@ -180,224 +119,130 @@
   box-shadow: 0 8px 24px rgba(255, 77, 109, 0.25);
 }
 .card-img-wrap {
-  position: relative;
-  aspect-ratio: 2/3;
-  background: #25253a;
-  overflow: hidden;
+  position: relative; aspect-ratio: 2/3;
+  background: #25253a; overflow: hidden;
 }
 .card-img-wrap img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity .4s;
-  display: block;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity .4s; display: block;
 }
 .card-img-wrap img.loaded { opacity: 1; }
 .card-img-wrap::before {
-  content: '';
-  position: absolute; inset: 0;
+  content: ''; position: absolute; inset: 0;
   background: linear-gradient(90deg, #1a1a28 0%, #25253a 50%, #1a1a28 100%);
   background-size: 200% 100%;
-  animation: skeleton 1.4s infinite;
-  z-index: 1;
+  animation: skeleton 1.4s infinite; z-index: 1;
 }
 .card-img-wrap.loaded::before { display: none; }
 @keyframes skeleton {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }.card-badge {
-  position: absolute;
-  top: 8px; left: 8px;
+  position: absolute; top: 8px; left: 8px;
   background: rgba(255, 77, 109, 0.9);
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  z-index: 2;
+  padding: 3px 8px; border-radius: 6px;
+  font-size: 11px; font-weight: 600; z-index: 2;
 }
 .card-info { padding: 10px; }
 .card-title {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  min-height: 34px;
+  font-size: 13px; font-weight: 600; line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden; min-height: 34px;
 }
 .card-meta {
-  font-size: 11px;
-  color: #888;
-  margin-top: 6px;
-  display: flex;
-  justify-content: space-between;
+  font-size: 11px; color: #888; margin-top: 6px;
+  display: flex; justify-content: space-between;
 }
 .card-meta .duration { color: #ffb800; font-weight: 600; }
-
 .sentinel { height: 40px; margin-top: 20px; }
 .loading-more {
-  text-align: center;
-  padding: 20px;
-  color: #888;
-  font-size: 14px;
+  text-align: center; padding: 20px; color: #888; font-size: 14px;
 }
 .spinner {
-  display: inline-block;
-  width: 22px; height: 22px;
-  border: 3px solid #2a2a3e;
-  border-top-color: #ff4d6d;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  vertical-align: middle;
-  margin-right: 8px;
+  display: inline-block; width: 22px; height: 22px;
+  border: 3px solid #2a2a3e; border-top-color: #ff4d6d;
+  border-radius: 50%; animation: spin .7s linear infinite;
+  vertical-align: middle; margin-right: 8px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-.end-msg {
-  text-align: center;
-  padding: 30px;
-  color: #555;
-  font-size: 14px;
-}
+.end-msg { text-align: center; padding: 30px; color: #555; font-size: 14px; }
 .error-box { text-align: center; padding: 40px 20px; color: #ff4d6d; }
 .error-box button {
-  margin-top: 16px;
-  padding: 10px 24px;
-  background: #ff4d6d;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  font-weight: 600;
+  margin-top: 16px; padding: 10px 24px;
+  background: #ff4d6d; color: #fff; border: none;
+  border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 600;
 }  #topBtn {
-    position: fixed;
-    bottom: 24px; right: 24px;
-    width: 46px; height: 46px;
-    border-radius: 50%;
-    background: #ff4d6d;
-    color: #fff;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    display: none;
+    position: fixed; bottom: 24px; right: 24px;
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #ff4d6d; color: #fff; border: none;
+    font-size: 20px; cursor: pointer; display: none;
     box-shadow: 0 4px 16px rgba(255, 77, 109, 0.5);
-    z-index: 99;
-    transition: transform .2s;
+    z-index: 99; transition: transform .2s;
   }
   #topBtn:hover { transform: scale(1.1); }
-
   .modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(6px);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 200;
-    padding: 20px;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+    display: none; justify-content: center; align-items: center;
+    z-index: 200; padding: 20px;
   }
   .modal-overlay.show { display: flex; }
   .modal {
-    background: #1a1a28;
-    border-radius: 16px;
-    max-width: 800px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
+    background: #1a1a28; border-radius: 16px;
+    max-width: 800px; width: 100%; max-height: 90vh;
+    overflow-y: auto; position: relative;
   }
   .modal.wide { max-width: 1000px; }
   .modal-close {
-    position: absolute;
-    top: 12px; right: 12px;
-    background: rgba(0,0,0,0.6);
-    border: none;
-    color: #fff;
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 20px;
-    z-index: 10;
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(0,0,0,0.6); border: none; color: #fff;
+    width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; font-size: 20px; z-index: 10;
   }
   .modal-body { display: block; padding: 0; }
   .modal-info-wrap { padding: 16px 20px 20px; }
   .modal-info-wrap h2 { font-size: 20px; margin-bottom: 10px; }
   .modal-info-wrap p { color: #aaa; font-size: 13px; line-height: 1.6; margin-bottom: 6px; }
-
   .modal-player {
-    width: 100%;
-    aspect-ratio: 16/9;
-    background: #000;
-    border-radius: 16px 16px 0 0;
-    overflow: hidden;
-    position: relative;
+    width: 100%; aspect-ratio: 16/9;
+    background: #000; border-radius: 16px 16px 0 0;
+    overflow: hidden; position: relative;
   }
   .modal-player iframe {
-    width: 100%; height: 100%;
-    border: 0;
-    display: block;
+    width: 100%; height: 100%; border: 0; display: block;
   }
-
   .source-tabs {
-    display: flex; gap: 8px;
-    padding: 12px 20px;
-    flex-wrap: wrap;
-    border-bottom: 1px solid #2a2a3e;
-    background: #15151f;
+    display: flex; gap: 8px; padding: 12px 20px; flex-wrap: wrap;
+    border-bottom: 1px solid #2a2a3e; background: #15151f;
   }
   .source-tabs .tab-label {
-    color: #888;
-    font-size: 13px;
-    align-self: center;
-    margin-right: 4px;
+    color: #888; font-size: 13px; align-self: center; margin-right: 4px;
   }
   .source-tab {
-    padding: 6px 14px;
-    background: #25253a;
-    border: 1px solid #2a2a3e;
-    border-radius: 8px;
-    color: #ccc;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all .2s;
+    padding: 6px 14px; background: #25253a;
+    border: 1px solid #2a2a3e; border-radius: 8px;
+    color: #ccc; font-size: 13px; cursor: pointer; transition: all .2s;
   }
   .source-tab:hover { border-color: #ff4d6d; color: #fff; }
   .source-tab.active {
-    background: #ff4d6d;
-    border-color: #ff4d6d;
-    color: #fff;
-    font-weight: 600;
+    background: #ff4d6d; border-color: #ff4d6d;
+    color: #fff; font-weight: 600;
   }
-
   .player-fallback {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    text-align: center;
-    background: #15151f;
-    aspect-ratio: 16/9;
-    border-radius: 16px 16px 0 0;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 60px 20px; text-align: center;
+    background: #15151f; aspect-ratio: 16/9; border-radius: 16px 16px 0 0;
   }
   .player-fallback .icon { font-size: 48px; margin-bottom: 16px; }
-  .player-fallback h3 { font-size: 18px; margin-bottom: 8px; color: #fff; }
+  .player-fallback h3 { font-size: 18px; margin-bottom: 8px; }
   .player-fallback p { color: #888; font-size: 14px; margin-bottom: 20px; max-width: 420px; }
   .player-fallback .btn-open {
-    display: inline-block;
-    padding: 12px 32px;
-    background: #ff4d6d;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 15px;
+    display: inline-block; padding: 12px 32px;
+    background: #ff4d6d; color: #fff; text-decoration: none;
+    border-radius: 10px; font-weight: 600; font-size: 15px;
     transition: transform .2s;
   }
   .player-fallback .btn-open:hover { transform: scale(1.05); }
-
   @media (max-width: 600px) {
     .source-tabs { padding: 10px 14px; }
     .modal-info-wrap { padding: 14px; }
@@ -408,7 +253,6 @@
 
 <header>
   <div class="logo">🎬 PHIM HAY</div>
-
   <nav class="nav-tabs">
     <button class="nav-tab active" data-view="home" onclick="switchView('home')">
       <span>🏠</span><span class="tab-text">Trang chủ</span>
@@ -418,7 +262,6 @@
       <span class="badge" id="historyBadge" data-count="0"></span>
     </button>
   </nav>
-
   <div class="search-box" id="searchBox">
     <input type="text" id="searchInput" placeholder="Tìm phim... (gõ 1 từ là ra)">
     <button class="clear-btn" id="clearBtn" title="Xóa">✕</button>
@@ -426,7 +269,6 @@
 </header>
 
 <div class="container">
-
   <div id="homeView">
     <div class="search-info" id="searchInfo">
       <span>Kết quả cho: <b id="searchKeyword"></b> — <span id="searchCount"></span> phim</span>
@@ -436,7 +278,6 @@
     <div id="sentinel" class="sentinel"></div>
     <div id="status" class="loading-more"></div>
   </div>
-
   <div id="historyView">
     <div class="section-header">
       <h2>🕒 Đã xem gần đây</h2>
@@ -444,7 +285,6 @@
     </div>
     <div class="history-grid" id="historyGrid"></div>
   </div>
-
 </div>
 
 <button id="topBtn" title="Lên đầu trang">↑</button>
@@ -459,12 +299,14 @@
    CẤU HÌNH
 ============================================ */
 const API_BASE = 'https://topxx.vip/api/v1/movies/latest';
-const PER_PAGE = 12;             // cho danh sách cuộn
-const PER_PAGE_INDEX = 30;       // cho index (mỗi trang nhiều hơn để tải ít lần)
-const PROXY_TIMEOUT = 8000;
+const PER_PAGE = 12;
+const PER_PAGE_INDEX = 30;
+const PROXY_TIMEOUT = 10000;
 const CACHE_TTL = 5 * 60 * 1000;
-const INDEX_TTL = 30 * 60 * 1000; // index giữ 30 phút
+const INDEX_TTL = 30 * 60 * 1000;
 const HISTORY_MAX = 24;
+const RETRY_429_DELAY = 3000;   // đợi 3s khi bị 429
+const BATCH_DELAY = 600;        // đợi giữa các batch
 
 const PROXIES = [
   (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -488,16 +330,16 @@ const cache = new Map();
 
 let workingProxyIdx = parseInt(localStorage.getItem('workingProxyIdx') ?? '-1');
 
-/* ============================================
-   ⭐ MOVIE INDEX — dùng cho search
-============================================ */
-let movieIndex = [];       // toàn bộ phim
-let indexReady = false;    // đã build xong chưa
-let indexPromise = null;   // promise đang build
+/* ⭐ MOVIE INDEX */
+let movieIndex = [];
+let indexReady = false;
+let indexPromise = null;
 
 /* ============================================
-   CACHE LOCALSTORAGE
+   HELPERS
 ============================================ */
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 function lsGet(key) {
   try {
     const raw = localStorage.getItem('movieCache::' + key);
@@ -527,6 +369,11 @@ async function fetchWithTimeout(url, ms) {
       headers: { 'Accept': 'application/json' },
       signal: ctrl.signal
     });
+    if (res.status === 429) {
+      const err = new Error('HTTP 429');
+      err.isRateLimit = true;
+      throw err;
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } finally {
@@ -535,9 +382,9 @@ async function fetchWithTimeout(url, ms) {
 }
 
 /* ============================================
-   FETCH 1 PAGE
+   FETCH 1 PAGE (Fix 429: retry + delay)
 ============================================ */
-async function fetchOnePage(page, perPage = PER_PAGE) {
+async function fetchOnePage(page, perPage = PER_PAGE, attempt = 0) {
   const key = `page::${page}::${perPage}`;
   const cached = lsGet(key);
   if (cached) return cached;
@@ -580,13 +427,29 @@ async function fetchOnePage(page, perPage = PER_PAGE) {
       lsSet(key, result);
       return result;
     } catch (err) {
+      console.warn(`❌ Proxy ${idx} fail:`, err.message);
       lastErr = err;
+
+      // ⭐ Nếu là 429 → đợi rồi thử proxy kế tiếp
+      if (err.isRateLimit || err.message.includes('429')) {
+        console.log(`⏳ Rate limit proxy ${idx}, chờ ${RETRY_429_DELAY}ms...`);
+        await sleep(RETRY_429_DELAY);
+      }
+
       if (idx === workingProxyIdx) {
         workingProxyIdx = -1;
         localStorage.removeItem('workingProxyIdx');
       }
     }
   }
+
+  // ⭐ Nếu tất cả proxy fail và lỗi cuối là 429 → retry toàn bộ 1 lần
+  if (attempt < 1 && lastErr && lastErr.message.includes('429')) {
+    console.log('🔄 Retry toàn bộ sau 429...');
+    await sleep(RETRY_429_DELAY);
+    return fetchOnePage(page, perPage, attempt + 1);
+  }
+
   throw lastErr || new Error('Tất cả proxy đều thất bại');
 }
 
@@ -595,13 +458,13 @@ async function fetchMovies(page = 1, search = '') {
 }
 
 /* ============================================
-   ⭐ BUILD INDEX — tải toàn bộ phim 1 lần
+   ⭐ BUILD INDEX — chỉ khi user search
 ============================================ */
 async function buildIndex() {
   if (indexPromise) return indexPromise;
 
   indexPromise = (async () => {
-    // 1) Thử cache index
+    // 1) Thử cache
     try {
       const raw = localStorage.getItem('movieIndex');
       if (raw) {
@@ -615,47 +478,65 @@ async function buildIndex() {
       }
     } catch {}
 
-    // 2) Tải page 1 để biết tổng số trang
+    // 2) Gộp tất cả phim đã có từ infinite scroll
+    const seen = new Set();
+    const all = [];
+    allMovies.forEach(m => {
+      if (m.code && !seen.has(m.code)) { seen.add(m.code); all.push(m); }
+    });
+
+    // 3) Nếu chưa đủ, tải thêm
     const first = await fetchOnePage(1, PER_PAGE_INDEX);
-    const totalPages = first.lastPage || 1;
-    console.log(`📚 Cần tải ${totalPages} trang để build index...`);
+    const totalPages = Math.min(first.lastPage || 1, 20); // tối đa 20 trang
+    console.log(`📚 Cần tải ${totalPages} trang...`);
 
-    const all = [...(first.movies || [])];
+    (first.movies || []).forEach(m => {
+      if (m.code && !seen.has(m.code)) { seen.add(m.code); all.push(m); }
+    });
 
-    // 3) Tải các trang còn lại song song (giới hạn 5 cùng lúc)
+    // ⭐ Concurrency thấp + delay để tránh 429
+    const CONCURRENCY = 2;
     const pages = [];
     for (let i = 2; i <= totalPages; i++) pages.push(i);
 
-    const CONCURRENCY = 5;
     for (let i = 0; i < pages.length; i += CONCURRENCY) {
       const batch = pages.slice(i, i + CONCURRENCY);
       const results = await Promise.all(
-        batch.map(p => fetchOnePage(p, PER_PAGE_INDEX).catch(() => ({ movies: [] })))
+        batch.map(p => fetchOnePage(p, PER_PAGE_INDEX).catch(e => ({ movies: [] })))
       );
       results.forEach(r => {
-        (r.movies || []).forEach(m => all.push(m));
+        (r.movies || []).forEach(m => {
+          if (m.code && !seen.has(m.code)) { seen.add(m.code); all.push(m); }
+        });
       });
-      console.log(`📚 Đã tải ${Math.min(i + CONCURRENCY, pages.length) + 1}/${totalPages} trang`);
+      const loaded = Math.min(i + CONCURRENCY + 1, totalPages);
+      console.log(`📚 ${loaded}/${totalPages} trang — ${all.length} phim`);
+      if (loaded < totalPages) await sleep(BATCH_DELAY);
     }
 
-    // 4) Dedupe + lưu
-    const seen = new Set();
-    movieIndex = all.filter(m => {
-      const code = m.code;
-      if (!code || seen.has(code)) return false;
-      seen.add(code);
-      return true;
-    });
+    movieIndex = all;
     indexReady = true;
-
     try {
       localStorage.setItem('movieIndex', JSON.stringify({ t: Date.now(), v: movieIndex }));
     } catch {}
-
     console.log('✅ Index sẵn sàng:', movieIndex.length, 'phim');
   })();
 
   return indexPromise;
+}
+
+/* ============================================
+   ⭐ Cập nhật index khi load thêm phim
+============================================ */
+function addToIndex(movies) {
+  if (!Array.isArray(movies)) return;
+  const existing = new Set(movieIndex.map(m => m.code));
+  movies.forEach(m => {
+    if (m.code && !existing.has(m.code)) {
+      movieIndex.push(m);
+      existing.add(m.code);
+    }
+  });
 }/* ============================================
    SKELETON
 ============================================ */
@@ -734,7 +615,6 @@ function getHistory() {
   try { return JSON.parse(localStorage.getItem('watchHistory') || '[]'); }
   catch { return []; }
 }
-
 function saveHistory(movie) {
   const trans = movie.trans?.[0] || {};
   const entry = {
@@ -755,19 +635,16 @@ function saveHistory(movie) {
   try { localStorage.setItem('watchHistory', JSON.stringify(list)); } catch {}
   updateHistoryBadge();
 }
-
 function updateHistoryBadge() {
   const count = getHistory().length;
   const badge = document.getElementById('historyBadge');
   badge.textContent = count;
   badge.setAttribute('data-count', count);
 }
-
 function renderHistory() {
   const list = getHistory();
   const grid = document.getElementById('historyGrid');
   grid.innerHTML = '';
-
   if (list.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
@@ -778,13 +655,11 @@ function renderHistory() {
     updateHistoryBadge();
     return;
   }
-
   const frag = document.createDocumentFragment();
   list.forEach(m => frag.appendChild(createCard(m)));
   grid.appendChild(frag);
   updateHistoryBadge();
 }
-
 function clearHistory() {
   if (!confirm('Xóa toàn bộ lịch sử xem?')) return;
   localStorage.removeItem('watchHistory');
@@ -796,15 +671,12 @@ function clearHistory() {
 ============================================ */
 function switchView(view) {
   currentView = view;
-
   document.querySelectorAll('.nav-tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.view === view);
   });
-
   const homeView = document.getElementById('homeView');
   const historyView = document.getElementById('historyView');
   const searchBox = document.getElementById('searchBox');
-
   if (view === 'history') {
     homeView.classList.add('hide');
     historyView.classList.add('show');
@@ -850,6 +722,7 @@ async function loadPage(page = 1, reset = false) {
 
     renderMovies(movies, !reset);
     allMovies = allMovies.concat(movies);
+    addToIndex(movies);   // ⭐ cập nhật index (miễn phí)
 
     lastPage = data.lastPage || 1;
     currentPage = data.currentPage || page;
@@ -862,6 +735,20 @@ async function loadPage(page = 1, reset = false) {
     }
   } catch (err) {
     console.error(err);
+
+    // ⭐ Nếu 429 → tự retry sau vài giây, không hiện lỗi
+    if (err.message && err.message.includes('429')) {
+      statusEl.innerHTML = `
+        <div class="error-box">
+          ⏳ Máy chủ đang giới hạn tốc độ, đợi 5s...
+        </div>`;
+      setTimeout(() => {
+        isLoading = false;
+        loadPage(page, false);
+      }, 5000);
+      return;
+    }
+
     statusEl.innerHTML = `
       <div class="error-box">
         ❌ Lỗi tải dữ liệu: ${err.message}
@@ -878,7 +765,7 @@ function retry() {
 }
 
 /* ============================================
-   ⭐ SEARCH LOCAL — không phân biệt dấu, match 1 từ
+   ⭐ SEARCH LOCAL
 ============================================ */
 function normalize(str) {
   return (str || '').toString()
@@ -896,34 +783,25 @@ function searchLocal(kw) {
   const results = [];
   for (const m of movieIndex) {
     const trans = m.trans?.[0] || {};
-    const title = trans.title || '';
-    const slug = trans.slug || '';
-    const code = m.code || '';
+    const title = normalize(trans.title || '');
+    const slug = normalize(trans.slug || '');
+    const code = normalize(m.code || '');
 
-    // Kiểm tra từng trường
-    const titleNorm = normalize(title);
-    const slugNorm = normalize(slug);
-    const codeNorm = normalize(code);
-
-    // Match nếu BẤT KỲ trường nào chứa needle
-    if (titleNorm.includes(needle) || slugNorm.includes(needle) || codeNorm.includes(needle)) {
+    if (title.includes(needle) || slug.includes(needle) || code.includes(needle)) {
       results.push(m);
       continue;
     }
 
-    // Match nếu needle khớp với BẤT KỲ từ nào trong title
-    // (VD: "thien" khớp "Già Thiên" — vì "thiên" chia thành từ)
-    const words = titleNorm.split(/\s+/);
+    const words = title.split(/\s+/);
     if (words.some(w => w.includes(needle) || needle.includes(w))) {
       results.push(m);
     }
   }
-
   return results;
 }
 
 /* ============================================
-   DO SEARCH — dùng index local (nhanh, tức thì)
+   DO SEARCH
 ============================================ */
 async function doSearch(kw) {
   kw = kw.trim();
@@ -945,7 +823,7 @@ async function doSearch(kw) {
 
   grid.innerHTML = '';
 
-  // Nếu index chưa sẵn sàng → chờ build xong
+  // Nếu index chưa sẵn sàng → build
   if (!indexReady) {
     renderSkeleton(8);
     statusEl.innerHTML = '<span class="spinner"></span>Đang tải danh sách phim để tìm kiếm...';
@@ -953,12 +831,14 @@ async function doSearch(kw) {
       await buildIndex();
     } catch (e) {
       statusEl.innerHTML = `
-        <div class="error-box">❌ Không tải được danh sách phim: ${e.message}</div>`;
+        <div class="error-box">
+          ❌ Không tải được danh sách phim: ${e.message}
+          <br><button onclick="doSearch('${kw.replace(/'/g, "\\'")}')">Thử lại</button>
+        </div>`;
       return;
     }
   }
 
-  // Tìm trong index
   grid.innerHTML = '';
   const results = searchLocal(kw);
 
@@ -998,11 +878,11 @@ const observer = new IntersectionObserver((entries) => {
       loadPage(currentPage + 1, false);
     }
   });
-}, { rootMargin: '300px' });
+}, { rootMargin: '200px' });
 observer.observe(sentinel);
 
 /* ============================================
-   SEARCH INPUT — Debounce ngắn để tức thì
+   SEARCH INPUT
 ============================================ */
 const searchInput = document.getElementById('searchInput');
 const searchBox = document.getElementById('searchBox');
@@ -1012,15 +892,14 @@ let searchTimeout;
 searchInput.addEventListener('input', () => {
   const val = searchInput.value.trim();
   searchBox.classList.toggle('has-value', val.length > 0);
-
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    if (val.length >= 1) {        // ⭐ Chỉ cần 1 ký tự
+    if (val.length >= 1) {
       doSearch(val);
     } else if (val.length === 0 && searchMode) {
       clearSearch();
     }
-  }, 250);   // ⭐ Debounce ngắn 250ms cho tức thì
+  }, 250);
 });
 
 searchInput.addEventListener('keydown', (e) => {
@@ -1030,9 +909,7 @@ searchInput.addEventListener('keydown', (e) => {
     const val = searchInput.value.trim();
     if (val) doSearch(val);
   }
-  if (e.key === 'Escape') {
-    clearSearch();
-  }
+  if (e.key === 'Escape') clearSearch();
 });
 
 clearBtn.addEventListener('click', clearSearch);/* ============================================
@@ -1054,15 +931,13 @@ function openModal(movie) {
 function renderPlayer() {
   const movie = currentMovie;
   if (!movie) return;
-
   const trans = movie.trans?.[0] || {};
   const title = trans.title || movie.code || 'Không có tên';
   const desc = trans.description || 'Chưa có mô tả.';
   const quality = movie.quality || '—';
   const duration = movie.duration || '—';
   const genres = (movie.genres || [])
-    .map(g => g.trans?.[0]?.name)
-    .filter(Boolean).join(', ') || '—';
+    .map(g => g.trans?.[0]?.name).filter(Boolean).join(', ') || '—';
 
   const sources = movie.sources || [];
   const body = document.getElementById('modalBody');
@@ -1092,13 +967,10 @@ function renderPlayer() {
 
   body.innerHTML = `
     <div class="modal-player" id="playerWrap">
-      <iframe id="playerFrame"
-              src="${embedUrl}"
+      <iframe id="playerFrame" src="${embedUrl}"
               allowfullscreen
               allow="autoplay; encrypted-media; picture-in-picture"
-              referrerpolicy="no-referrer"
-              loading="lazy">
-      </iframe>
+              referrerpolicy="no-referrer" loading="lazy"></iframe>
     </div>
     ${tabsHtml}
     <div class="modal-info-wrap">
@@ -1116,7 +988,6 @@ function startIframeWatchdog(embedUrl) {
   let loaded = false;
   const frame = document.getElementById('playerFrame');
   if (frame) frame.addEventListener('load', () => { loaded = true; });
-
   iframeLoadTimer = setTimeout(() => {
     if (loaded) return;
     const wrap = document.getElementById('playerWrap');
@@ -1170,10 +1041,7 @@ updateHistoryBadge();
 renderSkeleton(8);
 loadPage(1, true);
 
-// ⭐ Build index ngầm (không block UI) — sau 1s
-setTimeout(() => {
-  buildIndex().catch(e => console.warn('Index build fail:', e));
-}, 1000);
+/* ⭐ KHÔNG auto-build index nữa — chỉ build khi user search */
 </script>
 
 </body>
