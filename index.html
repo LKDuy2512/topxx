@@ -170,7 +170,7 @@
   font-size: 14px;
   cursor: pointer;
   font-weight: 600;
- }  /* TOP BUTTON */
+}  /* TOP BUTTON */
   #topBtn {
     position: fixed;
     bottom: 24px; right: 24px;
@@ -274,6 +274,34 @@
     font-weight: 600;
   }
 
+  /* FALLBACK KHI IFRAME BỊ CHẶN */
+  .player-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    background: #15151f;
+    aspect-ratio: 16/9;
+    border-radius: 16px 16px 0 0;
+  }
+  .player-fallback .icon { font-size: 48px; margin-bottom: 16px; }
+  .player-fallback h3 { font-size: 18px; margin-bottom: 8px; color: #fff; }
+  .player-fallback p { color: #888; font-size: 14px; margin-bottom: 20px; max-width: 420px; }
+  .player-fallback .btn-open {
+    display: inline-block;
+    padding: 12px 32px;
+    background: #ff4d6d;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    transition: transform .2s;
+  }
+  .player-fallback .btn-open:hover { transform: scale(1.05); }
+
   @media (max-width: 600px) {
     .source-tabs { padding: 10px 14px; }
     .modal-info-wrap { padding: 14px; }
@@ -328,13 +356,13 @@ const cache = new Map();
 let workingProxy = null;
 
 /* ============================================
-   HÀM FETCH API
+   HÀM FETCH API (tự thử proxy nếu bị CORS)
 ============================================ */
 async function fetchMovies(page = 1, search = '') {
   const key = `${page}::${search}`;
   if (cache.has(key)) return cache.get(key);
 
-  const params = new URLSearchParams({ page, per_page: 30 });
+  const params = new URLSearchParams({ page, per_page: 20 });
   if (search) params.append('search', search);
   const targetUrl = `${API_BASE}?${params.toString()}`;
 
@@ -391,7 +419,7 @@ function createCard(movie) {
   card.innerHTML = `
     <div class="card-img-wrap">
       ${quality ? `<div class="card-badge">${quality}</div>` : ''}
-      <img alt="${title}" loading="lazy">
+      <img alt="${title}" loading="lazy" decoding="async">
     </div>
     <div class="card-info">
       <div class="card-title">${title}</div>
@@ -520,15 +548,15 @@ searchInput.addEventListener('input', () => {
     }
   }, 600);
 });/* ============================================
-   MODAL CHI TIẾT + PLAYER
+   MODAL CHI TIẾT + PLAYER + FALLBACK
 ============================================ */
 let currentMovie = null;
 let currentSourceIndex = 0;
+let iframeLoadTimer = null;
 
 function openModal(movie) {
   currentMovie = movie;
   currentSourceIndex = 0;
-
   document.querySelector('.modal').classList.add('wide');
   renderPlayer();
   document.getElementById('modal').classList.add('show');
@@ -552,15 +580,11 @@ function renderPlayer() {
 
   if (sources.length === 0) {
     body.innerHTML = `
-      <div class="modal-info-wrap">
+      <div class="modal-info-wrap" style="padding:40px 20px;text-align:center">
         <h2>${title}</h2>
-        <p><strong>Chất lượng:</strong> ${quality}</p>
-        <p><strong>Thời lượng:</strong> ${duration}</p>
-        <p><strong>Thể loại:</strong> ${genres}</p>
-        <p style="margin-top:12px">${desc}</p>
-        <p style="color:#ff4d6d;margin-top:12px">⚠️ Chưa có nguồn phát cho phim này.</p>
-      </div>
-    `;
+        <p style="margin-top:16px">${desc}</p>
+        <p style="color:#ff4d6d;margin-top:16px">⚠️ Phim này chưa có nguồn phát.</p>
+      </div>`;
     return;
   }
 
@@ -571,20 +595,20 @@ function renderPlayer() {
         <button class="source-tab ${i === currentSourceIndex ? 'active' : ''}"
                 onclick="switchSource(${i})">
           ${s.type || 'Server ' + (i + 1)}
-        </button>
-      `).join('')}
-    </div>
-  ` : '';
+        </button>`).join('')}
+    </div>` : '';
 
   const currentSource = sources[currentSourceIndex] || sources[0];
   const embedUrl = currentSource.link || '';
 
   body.innerHTML = `
-    <div class="modal-player">
-      <iframe src="${embedUrl}"
+    <div class="modal-player" id="playerWrap">
+      <iframe id="playerFrame"
+              src="${embedUrl}"
               allowfullscreen
               allow="autoplay; encrypted-media; picture-in-picture"
-              referrerpolicy="no-referrer">
+              referrerpolicy="no-referrer"
+              loading="lazy">
       </iframe>
     </div>
     ${tabsHtml}
@@ -593,8 +617,33 @@ function renderPlayer() {
       <p><strong>Chất lượng:</strong> ${quality} · <strong>Thời lượng:</strong> ${duration}</p>
       <p><strong>Thể loại:</strong> ${genres}</p>
       <p style="margin-top:10px">${desc}</p>
-    </div>
-  `;
+    </div>`;
+
+  startIframeWatchdog(embedUrl);
+}
+
+function startIframeWatchdog(embedUrl) {
+  clearTimeout(iframeLoadTimer);
+  let loaded = false;
+
+  const frame = document.getElementById('playerFrame');
+  if (frame) {
+    frame.addEventListener('load', () => { loaded = true; });
+  }
+
+  iframeLoadTimer = setTimeout(() => {
+    if (loaded) return;
+    // Sau 3.5s chưa load xong → khả năng bị block, chuyển fallback
+    const wrap = document.getElementById('playerWrap');
+    if (!wrap) return;
+    wrap.outerHTML = `
+      <div class="player-fallback">
+        <div class="icon">🎬</div>
+        <h3>Không thể nhúng player</h3>
+        <p>Server stream chặn nhúng iframe. Nhấn nút bên dưới để xem trong tab mới.</p>
+        <a class="btn-open" href="${embedUrl}" target="_blank" rel="noopener">▶ Mở trong tab mới</a>
+      </div>`;
+  }, 3500);
 }
 
 function switchSource(index) {
@@ -602,13 +651,12 @@ function switchSource(index) {
   document.querySelectorAll('.source-tab').forEach((el, i) => {
     el.classList.toggle('active', i === index);
   });
-  const iframe = document.querySelector('.modal-player iframe');
-  const source = currentMovie.sources[index];
-  if (iframe && source) iframe.src = source.link;
+  renderPlayer();
 }
 
 function closeModal() {
   document.getElementById('modal').classList.remove('show');
+  clearTimeout(iframeLoadTimer);
   const body = document.getElementById('modalBody');
   setTimeout(() => { body.innerHTML = ''; }, 250);
   document.querySelector('.modal').classList.remove('wide');
@@ -617,7 +665,6 @@ function closeModal() {
 document.getElementById('modal').onclick = (e) => {
   if (e.target.id === 'modal') closeModal();
 };
-
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
 });
