@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> Phim Hay - TopXX</title>
+<title>🎬 Phim Hay - TopXX</title>
 
 <link rel="preconnect" href="https://topxx.vip" crossorigin>
 <link rel="preconnect" href="https://corsproxy.io" crossorigin>
@@ -253,27 +253,27 @@
 <body>
 
 <header>
-  <div class="logo"> PHIM HAY</div>
+  <div class="logo">🎬 PHIM HAY</div>
   <nav class="nav-tabs">
     <button class="nav-tab active" data-view="home" onclick="switchView('home')">
-      <span></span><span class="tab-text">Trang ch</span>
+      <span>🏠</span><span class="tab-text">Trang chủ</span>
     </button>
     <button class="nav-tab" data-view="history" onclick="switchView('history')">
-      <span></span><span class="tab-text">Lch s</span>
+      <span>🕒</span><span class="tab-text">Lịch sử</span>
       <span class="badge" id="historyBadge" data-count="0"></span>
     </button>
   </nav>
   <div class="search-box" id="searchBox">
-    <input type="text" id="searchInput" placeholder="T�m phim... (g� 1 t l� ra)">
-    <button class="clear-btn" id="clearBtn" title="X�a"></button>
+    <input type="text" id="searchInput" placeholder="Tìm phim... (gõ 1 từ là ra)">
+    <button class="clear-btn" id="clearBtn" title="Xóa">✕</button>
   </div>
 </header>
 
 <div class="container">
   <div id="homeView">
     <div class="search-info" id="searchInfo">
-      <span>Kt qu cho: <b id="searchKeyword"></b> � <span id="searchCount"></span> phim</span>
-      <button onclick="clearSearch()">X�a t�m kim</button>
+      <span>Kết quả cho: <b id="searchKeyword"></b> — <span id="searchCount"></span> phim</span>
+      <button onclick="clearSearch()">Xóa tìm kiếm</button>
     </div>
     <div id="grid" class="grid"></div>
     <div id="sentinel" class="sentinel"></div>
@@ -281,33 +281,33 @@
   </div>
   <div id="historyView">
     <div class="section-header">
-      <h2> � xem gn �y</h2>
-      <button class="clear-history" onclick="clearHistory()">X�a lch s</button>
+      <h2>🕒 Đã xem gần đây</h2>
+      <button class="clear-history" onclick="clearHistory()">Xóa lịch sử</button>
     </div>
     <div class="history-grid" id="historyGrid"></div>
   </div>
 </div>
 
-<button id="topBtn" title="L�n u trang"></button>
+<button id="topBtn" title="Lên đầu trang">↑</button>
 
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal()"></button>
+    <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-body" id="modalBody"></div>
   </div>
 </div><script>
 /* ============================================
-   CU H�NH
+   CẤU HÌNH
 ============================================ */
 const API_BASE = 'https://topxx.vip/api/v1/movies/latest';
 const PER_PAGE = 12;
 const PER_PAGE_INDEX = 30;
-const PROXY_TIMEOUT = 6000;      // 6s
+const PROXY_TIMEOUT = 6000;
 const CACHE_TTL = 5 * 60 * 1000;
 const INDEX_TTL = 30 * 60 * 1000;
 const HISTORY_MAX = 24;
 
-/*  Danh s�ch proxy � s c RACE song song */
+/* ⭐ Danh sách proxy — sẽ được RACE song song */
 const PROXIES = [
   { name: 'direct',  fn: (url) => url },
   { name: 'corsproxy', fn: (url) => `https://corsproxy.io/?${encodeURIComponent(url)}` },
@@ -329,10 +329,9 @@ let searchMode = false;
 let currentView = 'home';
 const cache = new Map();
 
-/* Nh proxy nhanh nht */
 let fastestProxyName = localStorage.getItem('fastestProxy') || 'direct';
 
-/*  MOVIE INDEX */
+/* ⭐ MOVIE INDEX — toàn bộ phim đã tải */
 let movieIndex = [];
 let indexReady = false;
 let indexPromise = null;
@@ -387,10 +386,9 @@ async function fetchViaProxy(proxyFn, targetUrl, ms) {
 }
 
 /* ============================================
-    RACE PROXY � th song song, c�i n�o tr li trc th� d�ng
+   ⭐ RACE PROXY — thử song song, cái nào trả lời trước thì dùng
 ============================================ */
 async function raceProxy(targetUrl, timeout = PROXY_TIMEOUT) {
-  // Sp xp: proxy nhanh nht l�n u ( u ti�n), nhng vn RACE
   const sorted = [...PROXIES].sort((a, b) => {
     if (a.name === fastestProxyName) return -1;
     if (b.name === fastestProxyName) return 1;
@@ -409,7 +407,7 @@ async function raceProxy(targetUrl, timeout = PROXY_TIMEOUT) {
           settled = true;
           fastestProxyName = proxy.name;
           localStorage.setItem('fastestProxy', proxy.name);
-          console.log(` Proxy thng: ${proxy.name}`);
+          console.log(`🏆 Proxy thắng: ${proxy.name}`);
           resolve(json);
         })
         .catch(err => {
@@ -417,7 +415,7 @@ async function raceProxy(targetUrl, timeout = PROXY_TIMEOUT) {
           pending--;
           if (pending === 0 && !settled) {
             settled = true;
-            reject(new Error('Tt c proxy fail: ' + errors.join(' | ')));
+            reject(new Error('Tất cả proxy fail: ' + errors.join(' | ')));
           }
         });
     });
@@ -431,7 +429,7 @@ async function fetchOnePage(page, perPage = PER_PAGE) {
   const key = `page::${page}::${perPage}`;
   const cached = lsGet(key);
   if (cached) {
-    console.log(` Cache page ${page}`);
+    console.log(`💾 Cache page ${page}`);
     return cached;
   }
 
@@ -459,7 +457,7 @@ async function fetchMovies(page = 1, search = '') {
 }
 
 /* ============================================
-    BUILD INDEX (chm r�i, tr�nh 429)
+   ⭐ BUILD INDEX — tải toàn bộ phim
 ============================================ */
 async function buildIndex() {
   if (indexPromise) return indexPromise;
@@ -472,7 +470,7 @@ async function buildIndex() {
         if (Date.now() - obj.t < INDEX_TTL && Array.isArray(obj.v) && obj.v.length > 0) {
           movieIndex = obj.v;
           indexReady = true;
-          console.log(' Index t cache:', movieIndex.length);
+          console.log('📚 Index từ cache:', movieIndex.length);
           return;
         }
       }
@@ -513,7 +511,7 @@ async function buildIndex() {
     try {
       localStorage.setItem('movieIndex', JSON.stringify({ t: Date.now(), v: movieIndex }));
     } catch {}
-    console.log(' Index sn s�ng:', movieIndex.length);
+    console.log('✅ Index sẵn sàng:', movieIndex.length);
   })();
 
   return indexPromise;
@@ -557,7 +555,7 @@ function createCard(movie) {
   card.className = 'card';
 
   const trans    = movie.trans?.[0] || {};
-  const title    = trans.title || movie.code || 'Kh�ng c� t�n';
+  const title    = trans.title || movie.code || 'Không có tên';
   const poster   = movie.thumbnail || '';
   const quality  = movie.quality || '';
   const duration = movie.duration || '';
@@ -600,7 +598,7 @@ function renderMovies(movies, append = false) {
 }
 
 /* ============================================
-   LCH S XEM
+   LỊCH SỬ XEM
 ============================================ */
 function getHistory() {
   try { return JSON.parse(localStorage.getItem('watchHistory') || '[]'); }
@@ -637,9 +635,9 @@ function renderHistory() {
   if (list.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
-        <div class="icon"></div>
-        <h3>Cha c� lch s xem</h3>
-        <p>Nhng phim bn xem s xut hin  �y.</p>
+        <div class="icon">🕒</div>
+        <h3>Chưa có lịch sử xem</h3>
+        <p>Những phim bạn xem sẽ xuất hiện ở đây.</p>
       </div>`;
     updateHistoryBadge();
     return;
@@ -650,7 +648,7 @@ function renderHistory() {
   updateHistoryBadge();
 }
 function clearHistory() {
-  if (!confirm('X�a to�n b lch s xem?')) return;
+  if (!confirm('Xóa toàn bộ lịch sử xem?')) return;
   localStorage.removeItem('watchHistory');
   renderHistory();
 }
@@ -692,7 +690,7 @@ async function loadPage(page = 1, reset = false) {
     if (!searchMode) renderSkeleton(8);
   }
 
-  statusEl.innerHTML = '<span class="spinner"></span>ang ti...';
+  statusEl.innerHTML = '<span class="spinner"></span>Đang tải...';
 
   try {
     const data = await fetchMovies(page, keyword);
@@ -701,8 +699,8 @@ async function loadPage(page = 1, reset = false) {
     if (movies.length === 0 && page === 1 && !searchMode) {
       statusEl.innerHTML = `
         <div class="error-box">
-           Kh�ng c� phim n�o.<br>
-          <small style="color:#888">Th t kh�a kh�c hoc ti li trang.</small>
+          ⚠️ Không có phim nào.<br>
+          <small style="color:#888">Thử từ khóa khác hoặc tải lại trang.</small>
         </div>`;
       hasMore = false;
       isLoading = false;
@@ -718,10 +716,10 @@ async function loadPage(page = 1, reset = false) {
 
     if (!data.hasNext || currentPage >= lastPage || movies.length === 0) {
       hasMore = false;
-      statusEl.innerHTML = `<div class="end-msg">� � hin th ${allMovies.length} phim �</div>`;
+      statusEl.innerHTML = `<div class="end-msg">— Đã hiển thị ${allMovies.length} phim —</div>`;
     } else {
       statusEl.innerHTML = '';
-      //  Prefetch trang k tip (background, kh�ng ch)
+      // ⭐ Prefetch trang kế tiếp (background)
       setTimeout(() => {
         fetchOnePage(currentPage + 1).catch(() => {});
       }, 1500);
@@ -732,7 +730,7 @@ async function loadPage(page = 1, reset = false) {
     if (err.message && err.message.includes('429')) {
       statusEl.innerHTML = `
         <div class="error-box">
-           M�y ch gii hn, i 5s...
+          ⏳ Máy chủ giới hạn, đợi 5s...
         </div>`;
       setTimeout(() => {
         isLoading = false;
@@ -743,8 +741,8 @@ async function loadPage(page = 1, reset = false) {
 
     statusEl.innerHTML = `
       <div class="error-box">
-         Li ti d liu: ${err.message}
-        <br><button onclick="retry()">Th li</button>
+        ❌ Lỗi tải dữ liệu: ${err.message}
+        <br><button onclick="retry()">Thử lại</button>
       </div>`;
   } finally {
     isLoading = false;
@@ -757,12 +755,12 @@ function retry() {
 }
 
 /* ============================================
-    SEARCH LOCAL
+   ⭐ SEARCH LOCAL — không phân biệt dấu, match 1 từ
 ============================================ */
 function normalize(str) {
   return (str || '').toString()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[]/g, 'd').toLowerCase().trim();
+    .replace(/[đĐ]/g, 'd').toLowerCase().trim();
 }
 
 function searchLocal(kw) {
@@ -803,14 +801,14 @@ async function doSearch(kw) {
 
   if (!indexReady) {
     renderSkeleton(8);
-    statusEl.innerHTML = '<span class="spinner"></span>ang ti danh s�ch phim...';
+    statusEl.innerHTML = '<span class="spinner"></span>Đang tải danh sách phim để tìm kiếm...';
     try {
       await buildIndex();
     } catch (e) {
       statusEl.innerHTML = `
         <div class="error-box">
-           Kh�ng ti c danh s�ch: ${e.message}
-          <br><button onclick="doSearch('${kw.replace(/'/g, "\\'")}')">Th li</button>
+          ❌ Không tải được danh sách: ${e.message}
+          <br><button onclick="doSearch('${kw.replace(/'/g, "\\'")}')">Thử lại</button>
         </div>`;
       return;
     }
@@ -822,14 +820,14 @@ async function doSearch(kw) {
   if (results.length === 0) {
     statusEl.innerHTML = `
       <div class="error-box">
-         Kh�ng t�m thy "<b>${kw}</b>"
-        <br><small style="color:#888">Th t kh�a kh�c</small>
+        🔍 Không tìm thấy "<b>${kw}</b>"
+        <br><small style="color:#888">Thử từ khóa khác</small>
       </div>`;
     document.getElementById('searchCount').textContent = '0';
   } else {
     renderMovies(results, false);
     document.getElementById('searchCount').textContent = results.length;
-    statusEl.innerHTML = `<div class="end-msg">� ${results.length} kt qu (t ${movieIndex.length} phim) �</div>`;
+    statusEl.innerHTML = `<div class="end-msg">— ${results.length} kết quả (từ ${movieIndex.length} phim) —</div>`;
   }
 }
 
@@ -884,8 +882,7 @@ searchInput.addEventListener('keydown', (e) => {
   }
   if (e.key === 'Escape') clearSearch();
 });
-
-clearBtn.addEventListener('click', clearSearch);/* ============================================
+/* ============================================
    MODAL + PLAYER
 ============================================ */
 let currentMovie = null;
@@ -905,12 +902,12 @@ function renderPlayer() {
   const movie = currentMovie;
   if (!movie) return;
   const trans = movie.trans?.[0] || {};
-  const title = trans.title || movie.code || 'Kh�ng c� t�n';
-  const desc = trans.description || 'Cha c� m� t.';
-  const quality = movie.quality || '�';
-  const duration = movie.duration || '�';
+  const title = trans.title || movie.code || 'Không có tên';
+  const desc = trans.description || 'Chưa có mô tả.';
+  const quality = movie.quality || '—';
+  const duration = movie.duration || '—';
   const genres = (movie.genres || [])
-    .map(g => g.trans?.[0]?.name).filter(Boolean).join(', ') || '�';
+    .map(g => g.trans?.[0]?.name).filter(Boolean).join(', ') || '—';
 
   const sources = movie.sources || [];
   const body = document.getElementById('modalBody');
@@ -920,7 +917,7 @@ function renderPlayer() {
       <div class="modal-info-wrap" style="padding:40px 20px;text-align:center">
         <h2>${title}</h2>
         <p style="margin-top:16px">${desc}</p>
-        <p style="color:#ff4d6d;margin-top:16px"> Phim n�y cha c� ngun ph�t.</p>
+        <p style="color:#ff4d6d;margin-top:16px">⚠️ Phim này chưa có nguồn phát.</p>
       </div>`;
     return;
   }
@@ -948,8 +945,8 @@ function renderPlayer() {
     ${tabsHtml}
     <div class="modal-info-wrap">
       <h2>${title}</h2>
-      <p><strong>Cht lng:</strong> ${quality} � <strong>Thi lng:</strong> ${duration}</p>
-      <p><strong>Th loi:</strong> ${genres}</p>
+      <p><strong>Chất lượng:</strong> ${quality} · <strong>Thời lượng:</strong> ${duration}</p>
+      <p><strong>Thể loại:</strong> ${genres}</p>
       <p style="margin-top:10px">${desc}</p>
     </div>`;
 
@@ -967,10 +964,10 @@ function startIframeWatchdog(embedUrl) {
     if (!wrap) return;
     wrap.outerHTML = `
       <div class="player-fallback">
-        <div class="icon"></div>
-        <h3>Kh�ng th nh�ng player</h3>
-        <p>Server chn iframe. Nhn n�t  xem tab mi.</p>
-        <a class="btn-open" href="${embedUrl}" target="_blank" rel="noopener"> M trong tab mi</a>
+        <div class="icon">🎬</div>
+        <h3>Không thể nhúng player</h3>
+        <p>Server chặn iframe. Nhấn nút để xem tab mới.</p>
+        <a class="btn-open" href="${embedUrl}" target="_blank" rel="noopener">▶ Mở trong tab mới</a>
       </div>`;
   }, 3500);
 }
@@ -1006,11 +1003,12 @@ const topBtn = document.getElementById('topBtn');
 window.addEventListener('scroll', () => {
   topBtn.style.display = window.scrollY > 400 ? 'block' : 'none';
 });
-topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });/* ============================================
-   KHI NG
+topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+clearBtn.addEventListener('click', clearSearch);/* ============================================
+   KHỞI ĐỘNG
 ============================================ */
-console.log(' Web phim TopXX ang chy...');
-console.log(' Proxy nhanh nht ln trc:', fastestProxyName);
+console.log('🚀 Web phim TopXX đang chạy...');
+console.log('⚡ Proxy nhanh nhất lần trước:', fastestProxyName);
 updateHistoryBadge();
 renderSkeleton(8);
 loadPage(1, true);
