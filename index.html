@@ -38,7 +38,6 @@
     white-space: nowrap;
   }
 
-  /* NAV TABS */
   .nav-tabs {
     display: flex;
     gap: 6px;
@@ -62,10 +61,7 @@
     white-space: nowrap;
   }
   .nav-tab:hover { color: #fff; }
-  .nav-tab.active {
-    background: #ff4d6d;
-    color: #fff;
-  }
+  .nav-tab.active { background: #ff4d6d; color: #fff; }
   .nav-tab .badge {
     display: inline-block;
     min-width: 18px;
@@ -79,7 +75,6 @@
     text-align: center;
   }
   .nav-tab.active .badge { background: rgba(255,255,255,0.35); }
-  .nav-tab .badge:empty,
   .nav-tab .badge[data-count="0"] { display: none; }
 
   .search-box { flex: 1; max-width: 320px; margin-left: auto; position: relative; }
@@ -110,8 +105,7 @@
     .nav-tab { padding: 7px 10px; font-size: 12px; }
     .nav-tab .tab-text { display: none; }
     .nav-tab.active .tab-text { display: inline; }
-  }/* SEARCH INFO */
-.search-info {
+  }.search-info {
   display: none;
   padding: 12px 0 4px;
   color: #888;
@@ -133,18 +127,13 @@
 }
 .search-info button:hover { border-color: #ff4d6d; color: #fff; }
 
-/* SECTION HEADER */
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
 }
-.section-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #fff;
-}
+.section-header h2 { font-size: 18px; font-weight: 600; color: #fff; }
 .section-header .clear-history {
   background: #25253a;
   border: 1px solid #2a2a3e;
@@ -155,27 +144,17 @@
   border-radius: 8px;
   transition: all .2s;
 }
-.section-header .clear-history:hover {
-  border-color: #ff4d6d;
-  color: #ff4d6d;
-}
+.section-header .clear-history:hover { border-color: #ff4d6d; color: #ff4d6d; }
 
-/* VIEWS */
 #historyView { display: none; }
 #historyView.show { display: block; }
 #homeView.hide { display: none; }
 
-/* EMPTY STATE */
-.empty-state {
-  text-align: center;
-  padding: 80px 20px;
-  color: #666;
-}
+.empty-state { text-align: center; padding: 80px 20px; color: #666; }
 .empty-state .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
 .empty-state h3 { color: #888; font-size: 18px; margin-bottom: 8px; }
 .empty-state p { font-size: 14px; }
 
-/* CONTAINER */
 .container { padding: 20px; max-width: 1400px; margin: 0 auto; }
 
 .grid, .history-grid {
@@ -281,11 +260,7 @@
   color: #555;
   font-size: 14px;
 }
-.error-box {
-  text-align: center;
-  padding: 40px 20px;
-  color: #ff4d6d;
-}
+.error-box { text-align: center; padding: 40px 20px; color: #ff4d6d; }
 .error-box button {
   margin-top: 16px;
   padding: 10px 24px;
@@ -445,14 +420,13 @@
   </nav>
 
   <div class="search-box" id="searchBox">
-    <input type="text" id="searchInput" placeholder="Tìm phim... (Enter để tìm)">
+    <input type="text" id="searchInput" placeholder="Tìm phim... (gõ 1 từ là ra)">
     <button class="clear-btn" id="clearBtn" title="Xóa">✕</button>
   </div>
 </header>
 
 <div class="container">
 
-  <!-- VIEW TRANG CHỦ -->
   <div id="homeView">
     <div class="search-info" id="searchInfo">
       <span>Kết quả cho: <b id="searchKeyword"></b> — <span id="searchCount"></span> phim</span>
@@ -463,7 +437,6 @@
     <div id="status" class="loading-more"></div>
   </div>
 
-  <!-- VIEW LỊCH SỬ -->
   <div id="historyView">
     <div class="section-header">
       <h2>🕒 Đã xem gần đây</h2>
@@ -486,10 +459,11 @@
    CẤU HÌNH
 ============================================ */
 const API_BASE = 'https://topxx.vip/api/v1/movies/latest';
-const PER_PAGE = 12;
-const PROXY_TIMEOUT = 6000;
+const PER_PAGE = 12;             // cho danh sách cuộn
+const PER_PAGE_INDEX = 30;       // cho index (mỗi trang nhiều hơn để tải ít lần)
+const PROXY_TIMEOUT = 8000;
 const CACHE_TTL = 5 * 60 * 1000;
-const SEARCH_PAGES = 5;
+const INDEX_TTL = 30 * 60 * 1000; // index giữ 30 phút
 const HISTORY_MAX = 24;
 
 const PROXIES = [
@@ -509,10 +483,17 @@ let hasMore = true;
 let allMovies = [];
 let keyword = '';
 let searchMode = false;
-let currentView = 'home';   // 'home' | 'history'
+let currentView = 'home';
 const cache = new Map();
 
 let workingProxyIdx = parseInt(localStorage.getItem('workingProxyIdx') ?? '-1');
+
+/* ============================================
+   ⭐ MOVIE INDEX — dùng cho search
+============================================ */
+let movieIndex = [];       // toàn bộ phim
+let indexReady = false;    // đã build xong chưa
+let indexPromise = null;   // promise đang build
 
 /* ============================================
    CACHE LOCALSTORAGE
@@ -556,12 +537,12 @@ async function fetchWithTimeout(url, ms) {
 /* ============================================
    FETCH 1 PAGE
 ============================================ */
-async function fetchOnePage(page) {
-  const key = `page::${page}`;
+async function fetchOnePage(page, perPage = PER_PAGE) {
+  const key = `page::${page}::${perPage}`;
   const cached = lsGet(key);
   if (cached) return cached;
 
-  const params = new URLSearchParams({ page, per_page: PER_PAGE });
+  const params = new URLSearchParams({ page, per_page: perPage });
   const targetUrl = `${API_BASE}?${params.toString()}`;
 
   let proxiesToTry;
@@ -610,39 +591,71 @@ async function fetchOnePage(page) {
 }
 
 async function fetchMovies(page = 1, search = '') {
-  return await fetchOnePage(page);
+  return await fetchOnePage(page, PER_PAGE);
 }
 
 /* ============================================
-   SEARCH CLIENT-SIDE
+   ⭐ BUILD INDEX — tải toàn bộ phim 1 lần
 ============================================ */
-async function searchMovies(kw) {
-  const needle = kw.toLowerCase().trim();
-  if (!needle) return [];
+async function buildIndex() {
+  if (indexPromise) return indexPromise;
 
-  console.log(`🔍 Đang tải ${SEARCH_PAGES} trang để tìm "${kw}"...`);
+  indexPromise = (async () => {
+    // 1) Thử cache index
+    try {
+      const raw = localStorage.getItem('movieIndex');
+      if (raw) {
+        const obj = JSON.parse(raw);
+        if (Date.now() - obj.t < INDEX_TTL && Array.isArray(obj.v) && obj.v.length > 0) {
+          movieIndex = obj.v;
+          indexReady = true;
+          console.log('📚 Index từ cache:', movieIndex.length, 'phim');
+          return;
+        }
+      }
+    } catch {}
 
-  const promises = [];
-  for (let i = 1; i <= SEARCH_PAGES; i++) {
-    promises.push(fetchOnePage(i).catch(() => ({ movies: [] })));
-  }
-  const results = await Promise.all(promises);
+    // 2) Tải page 1 để biết tổng số trang
+    const first = await fetchOnePage(1, PER_PAGE_INDEX);
+    const totalPages = first.lastPage || 1;
+    console.log(`📚 Cần tải ${totalPages} trang để build index...`);
 
-  const all = [];
-  const seen = new Set();
-  results.forEach(r => {
-    (r.movies || []).forEach(m => {
-      const code = m.code || m.trans?.[0]?.slug;
-      if (!code || seen.has(code)) return;
+    const all = [...(first.movies || [])];
+
+    // 3) Tải các trang còn lại song song (giới hạn 5 cùng lúc)
+    const pages = [];
+    for (let i = 2; i <= totalPages; i++) pages.push(i);
+
+    const CONCURRENCY = 5;
+    for (let i = 0; i < pages.length; i += CONCURRENCY) {
+      const batch = pages.slice(i, i + CONCURRENCY);
+      const results = await Promise.all(
+        batch.map(p => fetchOnePage(p, PER_PAGE_INDEX).catch(() => ({ movies: [] })))
+      );
+      results.forEach(r => {
+        (r.movies || []).forEach(m => all.push(m));
+      });
+      console.log(`📚 Đã tải ${Math.min(i + CONCURRENCY, pages.length) + 1}/${totalPages} trang`);
+    }
+
+    // 4) Dedupe + lưu
+    const seen = new Set();
+    movieIndex = all.filter(m => {
+      const code = m.code;
+      if (!code || seen.has(code)) return false;
       seen.add(code);
-
-      const title = (m.trans?.[0]?.title || m.code || '').toLowerCase();
-      if (title.includes(needle)) all.push(m);
+      return true;
     });
-  });
+    indexReady = true;
 
-  console.log(`✅ Tìm thấy ${all.length} phim khớp`);
-  return all;
+    try {
+      localStorage.setItem('movieIndex', JSON.stringify({ t: Date.now(), v: movieIndex }));
+    } catch {}
+
+    console.log('✅ Index sẵn sàng:', movieIndex.length, 'phim');
+  })();
+
+  return indexPromise;
 }/* ============================================
    SKELETON
 ============================================ */
@@ -718,9 +731,8 @@ function renderMovies(movies, append = false) {
    LỊCH SỬ XEM
 ============================================ */
 function getHistory() {
-  try {
-    return JSON.parse(localStorage.getItem('watchHistory') || '[]');
-  } catch { return []; }
+  try { return JSON.parse(localStorage.getItem('watchHistory') || '[]'); }
+  catch { return []; }
 }
 
 function saveHistory(movie) {
@@ -740,9 +752,7 @@ function saveHistory(movie) {
   list = list.filter(m => m.code !== entry.code);
   list.unshift(entry);
   list = list.slice(0, HISTORY_MAX);
-  try {
-    localStorage.setItem('watchHistory', JSON.stringify(list));
-  } catch {}
+  try { localStorage.setItem('watchHistory', JSON.stringify(list)); } catch {}
   updateHistoryBadge();
 }
 
@@ -782,7 +792,7 @@ function clearHistory() {
 }
 
 /* ============================================
-   SWITCH VIEW (Trang chủ <-> Lịch sử)
+   SWITCH VIEW
 ============================================ */
 function switchView(view) {
   currentView = view;
@@ -868,18 +878,61 @@ function retry() {
 }
 
 /* ============================================
-   TÌM KIẾM (CLIENT-SIDE)
+   ⭐ SEARCH LOCAL — không phân biệt dấu, match 1 từ
+============================================ */
+function normalize(str) {
+  return (str || '').toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .toLowerCase()
+    .trim();
+}
+
+function searchLocal(kw) {
+  const needle = normalize(kw);
+  if (!needle) return [];
+
+  const results = [];
+  for (const m of movieIndex) {
+    const trans = m.trans?.[0] || {};
+    const title = trans.title || '';
+    const slug = trans.slug || '';
+    const code = m.code || '';
+
+    // Kiểm tra từng trường
+    const titleNorm = normalize(title);
+    const slugNorm = normalize(slug);
+    const codeNorm = normalize(code);
+
+    // Match nếu BẤT KỲ trường nào chứa needle
+    if (titleNorm.includes(needle) || slugNorm.includes(needle) || codeNorm.includes(needle)) {
+      results.push(m);
+      continue;
+    }
+
+    // Match nếu needle khớp với BẤT KỲ từ nào trong title
+    // (VD: "thien" khớp "Già Thiên" — vì "thiên" chia thành từ)
+    const words = titleNorm.split(/\s+/);
+    if (words.some(w => w.includes(needle) || needle.includes(w))) {
+      results.push(m);
+    }
+  }
+
+  return results;
+}
+
+/* ============================================
+   DO SEARCH — dùng index local (nhanh, tức thì)
 ============================================ */
 async function doSearch(kw) {
   kw = kw.trim();
   if (!kw) { clearSearch(); return; }
 
-  // Nếu đang ở view lịch sử thì quay về trang chủ
   if (currentView !== 'home') switchView('home');
 
   keyword = kw;
   searchMode = true;
-  isLoading = true;
   hasMore = false;
 
   const statusEl = document.getElementById('status');
@@ -891,35 +944,35 @@ async function doSearch(kw) {
   document.getElementById('searchCount').textContent = '...';
 
   grid.innerHTML = '';
-  renderSkeleton(8);
-  statusEl.innerHTML = '<span class="spinner"></span>Đang tìm kiếm...';
 
-  try {
-    const results = await searchMovies(kw);
-    grid.innerHTML = '';
-
-    if (results.length === 0) {
+  // Nếu index chưa sẵn sàng → chờ build xong
+  if (!indexReady) {
+    renderSkeleton(8);
+    statusEl.innerHTML = '<span class="spinner"></span>Đang tải danh sách phim để tìm kiếm...';
+    try {
+      await buildIndex();
+    } catch (e) {
       statusEl.innerHTML = `
-        <div class="error-box">
-          🔍 Không tìm thấy phim nào khớp "<b>${kw}</b>"
-          <br><small style="color:#888">Thử từ khóa ngắn hơn (VD: "thiên", "game")</small>
-        </div>`;
-      document.getElementById('searchCount').textContent = '0';
-    } else {
-      renderMovies(results, false);
-      document.getElementById('searchCount').textContent = results.length;
-      statusEl.innerHTML = `<div class="end-msg">— ${results.length} kết quả —</div>`;
+        <div class="error-box">❌ Không tải được danh sách phim: ${e.message}</div>`;
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    grid.innerHTML = '';
+  }
+
+  // Tìm trong index
+  grid.innerHTML = '';
+  const results = searchLocal(kw);
+
+  if (results.length === 0) {
     statusEl.innerHTML = `
       <div class="error-box">
-        ❌ Lỗi tìm kiếm: ${err.message}
-        <br><button onclick="doSearch('${kw.replace(/'/g, "\\'")}')">Thử lại</button>
+        🔍 Không tìm thấy phim nào khớp "<b>${kw}</b>"
+        <br><small style="color:#888">Thử từ khóa khác (VD: "thiên", "trò", "ma")</small>
       </div>`;
-  } finally {
-    isLoading = false;
+    document.getElementById('searchCount').textContent = '0';
+  } else {
+    renderMovies(results, false);
+    document.getElementById('searchCount').textContent = results.length;
+    statusEl.innerHTML = `<div class="end-msg">— ${results.length} kết quả (từ ${movieIndex.length} phim) —</div>`;
   }
 }
 
@@ -949,7 +1002,7 @@ const observer = new IntersectionObserver((entries) => {
 observer.observe(sentinel);
 
 /* ============================================
-   SEARCH INPUT
+   SEARCH INPUT — Debounce ngắn để tức thì
 ============================================ */
 const searchInput = document.getElementById('searchInput');
 const searchBox = document.getElementById('searchBox');
@@ -962,12 +1015,12 @@ searchInput.addEventListener('input', () => {
 
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    if (val.length >= 2) {
+    if (val.length >= 1) {        // ⭐ Chỉ cần 1 ký tự
       doSearch(val);
     } else if (val.length === 0 && searchMode) {
       clearSearch();
     }
-  }, 800);
+  }, 250);   // ⭐ Debounce ngắn 250ms cho tức thì
 });
 
 searchInput.addEventListener('keydown', (e) => {
@@ -992,10 +1045,7 @@ let iframeLoadTimer = null;
 function openModal(movie) {
   currentMovie = movie;
   currentSourceIndex = 0;
-
-  // LƯU LỊCH SỬ
   saveHistory(movie);
-
   document.querySelector('.modal').classList.add('wide');
   renderPlayer();
   document.getElementById('modal').classList.add('show');
@@ -1095,8 +1145,6 @@ function closeModal() {
   const body = document.getElementById('modalBody');
   setTimeout(() => { body.innerHTML = ''; }, 250);
   document.querySelector('.modal').classList.remove('wide');
-
-  // Nếu đang ở view lịch sử, refresh để cập nhật thứ tự
   if (currentView === 'history') renderHistory();
 }
 
@@ -1121,6 +1169,11 @@ console.log('🚀 Web phim TopXX đang chạy...');
 updateHistoryBadge();
 renderSkeleton(8);
 loadPage(1, true);
+
+// ⭐ Build index ngầm (không block UI) — sau 1s
+setTimeout(() => {
+  buildIndex().catch(e => console.warn('Index build fail:', e));
+}, 1000);
 </script>
 
 </body>
