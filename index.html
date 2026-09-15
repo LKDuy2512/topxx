@@ -209,6 +209,7 @@
     overflow-y: auto;
     position: relative;
   }
+  .modal.wide { max-width: 1000px; }
   .modal-close {
     position: absolute;
     top: 12px; right: 12px;
@@ -221,23 +222,61 @@
     font-size: 20px;
     z-index: 10;
   }
-  .modal-body { display: flex; gap: 20px; padding: 20px; }
-  .modal-body img { width: 200px; border-radius: 10px; flex-shrink: 0; }
-  .modal-info h2 { margin-bottom: 10px; font-size: 22px; }
-  .modal-info p { color: #aaa; font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
-  .modal-info .btn-watch {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 10px 24px;
-    background: #ff4d6d;
-    color: #fff;
-    text-decoration: none;
+  .modal-body { display: block; padding: 0; }
+  .modal-info-wrap { padding: 16px 20px 20px; }
+  .modal-info-wrap h2 { font-size: 20px; margin-bottom: 10px; }
+  .modal-info-wrap p { color: #aaa; font-size: 13px; line-height: 1.6; margin-bottom: 6px; }
+
+  /* PLAYER */
+  .modal-player {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .modal-player iframe {
+    width: 100%; height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  /* TABS SERVER */
+  .source-tabs {
+    display: flex; gap: 8px;
+    padding: 12px 20px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #2a2a3e;
+    background: #15151f;
+  }
+  .source-tabs .tab-label {
+    color: #888;
+    font-size: 13px;
+    align-self: center;
+    margin-right: 4px;
+  }
+  .source-tab {
+    padding: 6px 14px;
+    background: #25253a;
+    border: 1px solid #2a2a3e;
     border-radius: 8px;
+    color: #ccc;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .source-tab:hover { border-color: #ff4d6d; color: #fff; }
+  .source-tab.active {
+    background: #ff4d6d;
+    border-color: #ff4d6d;
+    color: #fff;
     font-weight: 600;
   }
+
   @media (max-width: 600px) {
-    .modal-body { flex-direction: column; }
-    .modal-body img { width: 100%; max-width: 220px; margin: 0 auto; }
+    .source-tabs { padding: 10px 14px; }
+    .modal-info-wrap { padding: 14px; }
   }
 </style>
 </head>
@@ -265,9 +304,16 @@
   </div>
 </div><script>
 /* ============================================
-   CẤU HÌNH API - topxx.vip
+   CẤU HÌNH API - topxx.vip (qua CORS proxy)
 ============================================ */
 const API_BASE = 'https://topxx.vip/api/v1/movies/latest';
+
+const PROXIES = [
+  (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  (url) => `https://cors.eu.org/${url}`,
+  (url) => url
+];
 
 /* ============================================
    STATE
@@ -279,6 +325,7 @@ let hasMore = true;
 let allMovies = [];
 let keyword = '';
 const cache = new Map();
+let workingProxy = null;
 
 /* ============================================
    HÀM FETCH API
@@ -287,35 +334,47 @@ async function fetchMovies(page = 1, search = '') {
   const key = `${page}::${search}`;
   if (cache.has(key)) return cache.get(key);
 
-  const params = new URLSearchParams({ page });
+  const params = new URLSearchParams({ page, per_page: 30 });
   if (search) params.append('search', search);
+  const targetUrl = `${API_BASE}?${params.toString()}`;
 
-  const url = `${API_BASE}?${params.toString()}`;
+  let proxiesToTry = workingProxy
+    ? [workingProxy, ...PROXIES.filter(p => p !== workingProxy)]
+    : PROXIES;
 
-  const res = await fetch(url, {
-    headers: {
-      'Accept': 'application/json'
-      // Nếu API yêu cầu, thêm 'Referer' hoặc 'Authorization' tại đây
+  let lastErr = null;
+  for (const proxyFn of proxiesToTry) {
+    const url = proxyFn(targetUrl);
+    try {
+      console.log('📡 Thử:', url);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (!json || typeof json !== 'object') throw new Error('Not JSON');
+      if (json.error) throw new Error(json.error);
+
+      workingProxy = proxyFn;
+      console.log('✅ Proxy OK');
+
+      const movies = Array.isArray(json?.data) ? json.data : [];
+      const meta = json?.meta || {};
+      const links = json?.links || {};
+
+      const result = {
+        movies,
+        currentPage: meta.current_page || page,
+        lastPage: meta.last_page || (links.next ? page + 1 : page),
+        total: meta.total || 0,
+        hasNext: !!links.next
+      };
+      cache.set(key, result);
+      return result;
+    } catch (err) {
+      console.warn('❌ Proxy fail:', url, err.message);
+      lastErr = err;
     }
-  });
-
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-
-  const movies = Array.isArray(json?.data) ? json.data : [];
-  const meta = json?.meta || {};
-  const links = json?.links || {};
-
-  const result = {
-    movies,
-    currentPage: meta.current_page || page,
-    lastPage: meta.last_page || (links.next ? page + 1 : page),
-    total: meta.total || 0,
-    hasNext: !!links.next
-  };
-
-  cache.set(key, result);
-  return result;
+  }
+  throw lastErr || new Error('Tất cả proxy đều thất bại');
 }/* ============================================
    RENDER CARD
 ============================================ */
@@ -323,11 +382,10 @@ function createCard(movie) {
   const card = document.createElement('div');
   card.className = 'card';
 
-  // Lấy thông tin từ cấu trúc API topxx.vip
-  const trans   = movie.trans?.[0] || {};
-  const title   = trans.title || movie.code || 'Không có tên';
-  const poster  = movie.thumbnail || '';
-  const quality = movie.quality || '';
+  const trans    = movie.trans?.[0] || {};
+  const title    = trans.title || movie.code || 'Không có tên';
+  const poster   = movie.thumbnail || '';
+  const quality  = movie.quality || '';
   const duration = movie.duration || '';
 
   card.innerHTML = `
@@ -366,7 +424,7 @@ function renderMovies(movies, append = false) {
   const grid = document.getElementById('grid');
   if (!append) grid.innerHTML = '';
   movies.forEach(m => grid.appendChild(createCard(m)));
-     }/* ============================================
+}/* ============================================
    LOAD TRANG
 ============================================ */
 async function loadPage(page = 1, reset = false) {
@@ -462,37 +520,98 @@ searchInput.addEventListener('input', () => {
     }
   }, 600);
 });/* ============================================
-   MODAL CHI TIẾT
+   MODAL CHI TIẾT + PLAYER
 ============================================ */
+let currentMovie = null;
+let currentSourceIndex = 0;
+
 function openModal(movie) {
+  currentMovie = movie;
+  currentSourceIndex = 0;
+
+  document.querySelector('.modal').classList.add('wide');
+  renderPlayer();
+  document.getElementById('modal').classList.add('show');
+}
+
+function renderPlayer() {
+  const movie = currentMovie;
+  if (!movie) return;
+
   const trans = movie.trans?.[0] || {};
   const title = trans.title || movie.code || 'Không có tên';
   const desc = trans.description || 'Chưa có mô tả.';
-  const poster = movie.thumbnail || '';
   const quality = movie.quality || '—';
   const duration = movie.duration || '—';
-  const genres = (movie.genres || []).map(g => g.trans?.[0]?.name).filter(Boolean).join(', ') || '—';
+  const genres = (movie.genres || [])
+    .map(g => g.trans?.[0]?.name)
+    .filter(Boolean).join(', ') || '—';
 
-  // Link xem phim từ sources
-  const source = movie.sources?.[0] || {};
-  const watchLink = source.link || '';
+  const sources = movie.sources || [];
+  const body = document.getElementById('modalBody');
 
-  document.getElementById('modalBody').innerHTML = `
-    <img src="${poster}" alt="${title}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22300%22><rect fill=%22%2325253a%22 width=%22200%22 height=%22300%22/></svg>'">
-    <div class="modal-info">
+  if (sources.length === 0) {
+    body.innerHTML = `
+      <div class="modal-info-wrap">
+        <h2>${title}</h2>
+        <p><strong>Chất lượng:</strong> ${quality}</p>
+        <p><strong>Thời lượng:</strong> ${duration}</p>
+        <p><strong>Thể loại:</strong> ${genres}</p>
+        <p style="margin-top:12px">${desc}</p>
+        <p style="color:#ff4d6d;margin-top:12px">⚠️ Chưa có nguồn phát cho phim này.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const tabsHtml = sources.length > 1 ? `
+    <div class="source-tabs">
+      <span class="tab-label">Server:</span>
+      ${sources.map((s, i) => `
+        <button class="source-tab ${i === currentSourceIndex ? 'active' : ''}"
+                onclick="switchSource(${i})">
+          ${s.type || 'Server ' + (i + 1)}
+        </button>
+      `).join('')}
+    </div>
+  ` : '';
+
+  const currentSource = sources[currentSourceIndex] || sources[0];
+  const embedUrl = currentSource.link || '';
+
+  body.innerHTML = `
+    <div class="modal-player">
+      <iframe src="${embedUrl}"
+              allowfullscreen
+              allow="autoplay; encrypted-media; picture-in-picture"
+              referrerpolicy="no-referrer">
+      </iframe>
+    </div>
+    ${tabsHtml}
+    <div class="modal-info-wrap">
       <h2>${title}</h2>
-      <p><strong>Chất lượng:</strong> ${quality}</p>
-      <p><strong>Thời lượng:</strong> ${duration}</p>
+      <p><strong>Chất lượng:</strong> ${quality} · <strong>Thời lượng:</strong> ${duration}</p>
       <p><strong>Thể loại:</strong> ${genres}</p>
-      <p style="margin-top:12px">${desc}</p>
-      ${watchLink ? `<a class="btn-watch" href="${watchLink}" target="_blank" rel="noopener">▶ Xem phim</a>` : ''}
+      <p style="margin-top:10px">${desc}</p>
     </div>
   `;
-  document.getElementById('modal').classList.add('show');
+}
+
+function switchSource(index) {
+  currentSourceIndex = index;
+  document.querySelectorAll('.source-tab').forEach((el, i) => {
+    el.classList.toggle('active', i === index);
+  });
+  const iframe = document.querySelector('.modal-player iframe');
+  const source = currentMovie.sources[index];
+  if (iframe && source) iframe.src = source.link;
 }
 
 function closeModal() {
   document.getElementById('modal').classList.remove('show');
+  const body = document.getElementById('modalBody');
+  setTimeout(() => { body.innerHTML = ''; }, 250);
+  document.querySelector('.modal').classList.remove('wide');
 }
 
 document.getElementById('modal').onclick = (e) => {
