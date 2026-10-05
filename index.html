@@ -3,20 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎬 Phim Hay - HentaiOcean</title>
-
-<link rel="preconnect" href="https://hentaiocean.com" crossorigin>
+<title>🎬 Phim Hay - HentaiOcean Player</title>
+<link rel="preconnect" href="https://api.rss2json.com" crossorigin>
 <link rel="preconnect" href="https://corsproxy.io" crossorigin>
 <link rel="preconnect" href="https://api.allorigins.win" crossorigin>
-<link rel="dns-prefetch" href="https://hentaiocean.com">
-<link rel="dns-prefetch" href="https://corsproxy.io">
-<link rel="dns-prefetch" href="https://api.allorigins.win"><style>
+
+<style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #0f0f17; color: #fff; min-height: 100vh;
   }
-  header {
+    header {
     position: sticky; top: 0; z-index: 100;
     background: rgba(15, 15, 23, 0.95);
     backdrop-filter: blur(10px);
@@ -30,15 +28,11 @@
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     white-space: nowrap;
   }
-  .nav-tabs {
-    display: flex; gap: 6px;
-    background: #1a1a28; padding: 4px; border-radius: 10px;
-  }
+  .nav-tabs { display: flex; gap: 6px; background: #1a1a28; padding: 4px; border-radius: 10px; }
   .nav-tab {
     padding: 8px 14px; background: transparent; border: none;
     color: #aaa; font-size: 13px; font-weight: 600;
-    cursor: pointer; border-radius: 8px;
-    transition: all .2s;
+    cursor: pointer; border-radius: 8px; transition: all .2s;
     display: flex; align-items: center; gap: 6px; white-space: nowrap;
   }
   .nav-tab:hover { color: #fff; }
@@ -50,12 +44,11 @@
   }
   .nav-tab.active .badge { background: rgba(255,255,255,0.35); }
   .nav-tab .badge[data-count="0"] { display: none; }
-  .search-box { flex: 1; max-width: 320px; margin-left: auto; position: relative; }
+  .search-box { flex: 1; max-width: 380px; margin-left: auto; position: relative; }
   .search-box input {
     width: 100%; padding: 10px 34px 10px 14px;
     background: #1a1a28; border: 1px solid #2a2a3e;
-    border-radius: 10px; color: #fff; font-size: 14px;
-    outline: none; transition: border .2s;
+    border-radius: 10px; color: #fff; font-size: 13px; outline: none;
   }
   .search-box input:focus { border-color: #ff4d6d; }
   .search-box .clear-btn {
@@ -69,204 +62,127 @@
     .nav-tab { padding: 7px 10px; font-size: 12px; }
     .nav-tab .tab-text { display: none; }
     .nav-tab.active .tab-text { display: inline; }
-  }.search-info {
-  display: none; padding: 12px 0 4px; color: #888; font-size: 14px;
-  align-items: center; gap: 8px; flex-wrap: wrap;
-}
-.search-info.show { display: flex; }
-.search-info b { color: #ff4d6d; }
-.search-info button {
-  padding: 4px 10px; background: #25253a; border: 1px solid #2a2a3e;
-  border-radius: 6px; color: #ccc; cursor: pointer; font-size: 12px;
-}
-.search-info button:hover { border-color: #ff4d6d; color: #fff; }
-.section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 16px;
-}
-.section-header h2 { font-size: 18px; font-weight: 600; }
-.section-header .clear-history {
-  background: #25253a; border: 1px solid #2a2a3e;
-  color: #ccc; font-size: 13px; cursor: pointer;
-  padding: 6px 14px; border-radius: 8px; transition: all .2s;
-}
-.section-header .clear-history:hover { border-color: #ff4d6d; color: #ff4d6d; }
-#historyView { display: none; }
-#historyView.show { display: block; }
-#homeView.hide { display: none; }
-.empty-state { text-align: center; padding: 80px 20px; color: #666; }
-.empty-state .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
-.empty-state h3 { color: #888; font-size: 18px; margin-bottom: 8px; }
-.empty-state p { font-size: 14px; }
-.container { padding: 20px; max-width: 1400px; margin: 0 auto; }
-.grid, .history-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
-}
-@media (max-width: 480px) {
-  .grid, .history-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .container { padding: 12px; }
-}.card {
-  background: #1a1a28; border-radius: 12px; overflow: hidden;
-  cursor: pointer; transition: transform .25s, box-shadow .25s;
-  position: relative;
-}
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(255, 77, 109, 0.25);
-}
-.card-img-wrap {
-  position: relative; aspect-ratio: 2/3;
-  background: #25253a; overflow: hidden;
-}
-.card-img-wrap img {
-  width: 100%; height: 100%; object-fit: cover;
-  opacity: 0; transition: opacity .4s; display: block;
-}
-.card-img-wrap img.loaded { opacity: 1; }
-.card-img-wrap::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(90deg, #1a1a28 0%, #25253a 50%, #1a1a28 100%);
-  background-size: 200% 100%;
-  animation: skeleton 1.4s infinite; z-index: 1;
-}
-.card-img-wrap.loaded::before { display: none; }
-@keyframes skeleton {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-.card-badge {
-  position: absolute; top: 8px; left: 8px;
-  background: rgba(255, 77, 109, 0.9);
-  padding: 3px 8px; border-radius: 6px;
-  font-size: 11px; font-weight: 600; z-index: 2;
-}
-.card-info { padding: 10px; }
-.card-title {
-  font-size: 13px; font-weight: 600; line-height: 1.3;
-  display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden; min-height: 34px;
-}
-.card-meta {
-  font-size: 11px; color: #888; margin-top: 6px;
-  display: flex; justify-content: space-between;
-}
-.card-meta .duration { color: #ffb800; font-weight: 600; }
-.sentinel { height: 40px; margin-top: 20px; }
-.loading-more {
-  text-align: center; padding: 20px; color: #888; font-size: 14px;
-}
-.spinner {
-  display: inline-block; width: 22px; height: 22px;
-  border: 3px solid #2a2a3e; border-top-color: #ff4d6d;
-  border-radius: 50%; animation: spin .7s linear infinite;
-  vertical-align: middle; margin-right: 8px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.end-msg { text-align: center; padding: 30px; color: #555; font-size: 14px; }
-.error-box { text-align: center; padding: 40px 20px; color: #ff4d6d; }
-.error-box button {
-  margin-top: 16px; padding: 10px 24px;
-  background: #ff4d6d; color: #fff; border: none;
-  border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 600;
-}
-#topBtn {
-  position: fixed; bottom: 24px; right: 24px;
-  width: 46px; height: 46px; border-radius: 50%;
-  background: #ff4d6d; color: #fff; border: none;
-  font-size: 20px; cursor: pointer; display: none;
-  box-shadow: 0 4px 16px rgba(255, 77, 109, 0.5);
-  z-index: 99; transition: transform .2s;
-}
-#topBtn:hover { transform: scale(1.1); }  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
-    display: none; justify-content: center; align-items: center;
-    z-index: 200; padding: 20px;
+  }
+    .search-info {
+    display: none; padding: 12px 0 4px; color: #888; font-size: 14px;
+    align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .search-info.show { display: flex; }
+  .search-info b { color: #ff4d6d; }
+  .search-info button {
+    padding: 4px 10px; background: #25253a; border: 1px solid #2a2a3e;
+    border-radius: 6px; color: #ccc; cursor: pointer; font-size: 12px;
+  }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+  }
+  .section-header h2 { font-size: 18px; font-weight: 600; }
+  .section-header .clear-history {
+    background: #25253a; border: 1px solid #2a2a3e;
+    color: #ccc; font-size: 13px; cursor: pointer;
+    padding: 6px 14px; border-radius: 8px;
+  }
+  #historyView { display: none; }
+  #historyView.show { display: block; }
+  #homeView.hide { display: none; }
+  .empty-state { text-align: center; padding: 80px 20px; color: #666; }
+  .empty-state .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+  .container { padding: 20px; max-width: 1400px; margin: 0 auto; }
+  .grid, .history-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px;
+  }
+  @media (max-width: 480px) {
+    .grid, .history-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .container { padding: 12px; }
+  }
+  .card {
+    background: #1a1a28; border-radius: 12px; overflow: hidden;
+    cursor: pointer; transition: transform .25s, box-shadow .25s; position: relative;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(255, 77, 109, 0.25); }
+  .card-img-wrap {
+    position: relative; aspect-ratio: 2/3; background: #25253a; overflow: hidden;
+  }
+  .card-img-wrap img {
+    width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .4s; display: block;
+  }
+  .card-img-wrap img.loaded { opacity: 1; }
+  .card-img-wrap::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, #1a1a28 0%, #25253a 50%, #1a1a28 100%);
+    background-size: 200% 100%; animation: skeleton 1.4s infinite; z-index: 1;
+  }
+  .card-img-wrap.loaded::before { display: none; }
+  @keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .card-info { padding: 10px; }
+  .card-title {
+    font-size: 13px; font-weight: 600; line-height: 1.3;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 34px;
+  }
+  .card-meta { font-size: 11px; color: #888; margin-top: 6px; display: flex; justify-content: space-between; }
+  .sentinel { height: 40px; margin-top: 20px; }
+  .loading-more { text-align: center; padding: 20px; color: #888; font-size: 14px; }
+  .spinner {
+    display: inline-block; width: 22px; height: 22px;
+    border: 3px solid #2a2a3e; border-top-color: #ff4d6d;
+    border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .end-msg { text-align: center; padding: 30px; color: #555; font-size: 14px; }
+  .error-box { text-align: center; padding: 40px 20px; color: #ff4d6d; }
+  .error-box button {
+    margin-top: 16px; padding: 10px 24px; background: #ff4d6d; color: #fff;
+    border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 600;
+  }
+  #topBtn {
+    position: fixed; bottom: 24px; right: 24px; width: 46px; height: 46px;
+    border-radius: 50%; background: #ff4d6d; color: #fff; border: none;
+    font-size: 20px; cursor: pointer; display: none; z-index: 99;
+  }
+    .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+    display: none; justify-content: center; align-items: center; z-index: 200; padding: 20px;
   }
   .modal-overlay.show { display: flex; }
   .modal {
-    background: #1a1a28; border-radius: 16px;
-    max-width: 800px; width: 100%; max-height: 90vh;
-    overflow-y: auto; position: relative;
+    background: #1a1a28; border-radius: 16px; max-width: 800px; width: 100%;
+    max-height: 90vh; overflow-y: auto; position: relative;
   }
-  .modal.wide { max-width: 1000px; }
   .modal-close {
-    position: absolute; top: 12px; right: 12px;
-    background: rgba(0,0,0,0.6); border: none; color: #fff;
-    width: 36px; height: 36px; border-radius: 50%;
+    position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6);
+    border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%;
     cursor: pointer; font-size: 20px; z-index: 10;
   }
   .modal-body { display: block; padding: 0; }
   .modal-info-wrap { padding: 16px 20px 20px; }
-  .modal-info-wrap h2 { font-size: 20px; margin-bottom: 10px; }
+  .modal-info-wrap h2 { font-size: 18px; margin-bottom: 10px; color: #fff; }
   .modal-info-wrap p { color: #aaa; font-size: 13px; line-height: 1.6; margin-bottom: 6px; }
 
-  /* ===== CSS PLAYER bạn yêu cầu ===== */
-  video {
-    position: relative;
-    width: 100%;
-    height: 0;
-    padding-bottom: calc(56.25% + 40px);
-  }
   .video {
-    position: relative;
-    width: 100%;
-    height: 0;
-    padding-bottom: calc(56.25% + 40px);
-    background: #000;
-    overflow: hidden;
-    border-radius: 16px 16px 0 0;
+    position: relative; width: 100%; height: 0; padding-bottom: 56.25%;
+    background: #000; overflow: hidden; border-radius: 16px 16px 0 0;
   }
-  .video iframe {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-    border: 0;
-    display: block;
+  .video iframe, .video video {
+    position: absolute; width: 100%; height: 100%; left: 0; top: 0; border: 0; display: block;
   }
-
+  .player-status {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #aaa; font-size: 14px; background: #111;
+  }
   .source-tabs {
     display: flex; gap: 8px; padding: 12px 20px; flex-wrap: wrap;
     border-bottom: 1px solid #2a2a3e; background: #15151f;
   }
-  .source-tabs .tab-label {
-    color: #888; font-size: 13px; align-self: center; margin-right: 4px;
-  }
+  .source-tabs .tab-label { color: #888; font-size: 13px; align-self: center; margin-right: 4px; }
   .source-tab {
-    padding: 6px 14px; background: #25253a;
-    border: 1px solid #2a2a3e; border-radius: 8px;
-    color: #ccc; font-size: 13px; cursor: pointer; transition: all .2s;
+    padding: 6px 14px; background: #25253a; border: 1px solid #2a2a3e;
+    border-radius: 8px; color: #ccc; font-size: 13px; cursor: pointer;
   }
   .source-tab:hover { border-color: #ff4d6d; color: #fff; }
-  .source-tab.active {
-    background: #ff4d6d; border-color: #ff4d6d;
-    color: #fff; font-weight: 600;
-  }
-  .player-fallback {
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; padding: 60px 20px; text-align: center;
-    background: #15151f; aspect-ratio: 16/9; border-radius: 16px 16px 0 0;
-  }
-  .player-fallback .icon { font-size: 48px; margin-bottom: 16px; }
-  .player-fallback h3 { font-size: 18px; margin-bottom: 8px; }
-  .player-fallback p { color: #888; font-size: 14px; margin-bottom: 20px; max-width: 420px; }
-  .player-fallback .btn-open {
-    display: inline-block; padding: 12px 32px;
-    background: #ff4d6d; color: #fff; text-decoration: none;
-    border-radius: 10px; font-weight: 600; font-size: 15px;
-    transition: transform .2s;
-  }
-  .player-fallback .btn-open:hover { transform: scale(1.05); }
-  @media (max-width: 600px) {
-    .source-tabs { padding: 10px 14px; }
-    .modal-info-wrap { padding: 14px; }
-  }
+  .source-tab.active { background: #ff4d6d; border-color: #ff4d6d; color: #fff; font-weight: 600; }
 </style>
-</head><body>
+</head>
+<body>
 
 <header>
   <div class="logo">🎬 PHIM HAY</div>
@@ -276,11 +192,11 @@
     </button>
     <button class="nav-tab" data-view="history" onclick="switchView('history')">
       <span>🕒</span><span class="tab-text">Lịch sử</span>
-      <span class="badge" id="historyBadge" data-count="0"></span>
+      <span class="badge" id="historyBadge" data-count="0">0</span>
     </button>
   </nav>
   <div class="search-box" id="searchBox">
-    <input type="text" id="searchInput" placeholder="Tìm phim... (gõ 1 từ là ra)">
+    <input type="text" id="searchInput" placeholder="Tìm tên hoặc dán link watch/slug...">
     <button class="clear-btn" id="clearBtn" title="Xóa">✕</button>
   </div>
 </header>
@@ -288,13 +204,14 @@
 <div class="container">
   <div id="homeView">
     <div class="search-info" id="searchInfo">
-      <span>Kết quả cho: <b id="searchKeyword"></b> — <span id="searchCount"></span> phim</span>
+      <span>Kết quả cho: <b id="searchKeyword"></b> — <span id="searchCount">0</span> phim</span>
       <button onclick="clearSearch()">Xóa tìm kiếm</button>
     </div>
     <div id="grid" class="grid"></div>
     <div id="sentinel" class="sentinel"></div>
     <div id="status" class="loading-more"></div>
   </div>
+  
   <div id="historyView">
     <div class="section-header">
       <h2>🕒 Đã xem gần đây</h2>
@@ -311,731 +228,485 @@
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-body" id="modalBody"></div>
   </div>
-</div><script>
-/* ============================================
-   CẤU HÌNH
-============================================ */
-const API_BASE = 'https://hentaiocean.com/api/v1/movies';
-const IMAGE_BASE = 'https://hentaiocean.com/images/';
-const EMBED_BASE = 'https://hentaiocean.com/embed/';
-const PER_PAGE = 12;
-const PER_PAGE_INDEX = 30;
-const PROXY_TIMEOUT = 6000;
-const CACHE_TTL = 5 * 60 * 1000;
-const INDEX_TTL = 30 * 60 * 1000;
-const HISTORY_MAX = 24;
+</div>
+<script>
+  const RSS_URL = 'https://hentaiocean.com/rss.xml';
 
-/* ⭐ Danh sách proxy — sẽ được RACE song song */
-const PROXIES = [
-  { name: 'direct',  fn: (url) => url },
-  { name: 'corsproxy', fn: (url) => `https://corsproxy.io/?${encodeURIComponent(url)}` },
-  { name: 'allorigins', fn: (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` },
-  { name: 'codetabs', fn: (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}` },
-  { name: 'cors-eu', fn: (url) => `https://cors.eu.org/${url}` }
-];
+  let allMovies = [];
+  let filteredMovies = [];
+  let currentPage = 1;
+  const pageSize = 20;
+  let isLoading = false;
 
-/* ============================================
-   STATE
-============================================ */
-let currentPage = 1;
-let lastPage = 1;
-let isLoading = false;
-let hasMore = true;
-let allMovies = [];
-let keyword = '';
-let searchMode = false;
-let currentView = 'home';
-const cache = new Map();
-
-let fastestProxyName = localStorage.getItem('fastestProxy') || 'direct';
-
-/* ⭐ MOVIE INDEX — toàn bộ phim đã tải */
-let movieIndex = [];
-let indexReady = false;
-let indexPromise = null;/* ============================================
-   HELPERS
-============================================ */
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function lsGet(key) {
-  try {
-    const raw = localStorage.getItem('movieCache::' + key);
-    if (!raw) return null;
-    const obj = JSON.parse(raw);
-    if (Date.now() - obj.t > CACHE_TTL) {
-      localStorage.removeItem('movieCache::' + key);
-      return null;
-    }
-    return obj.v;
-  } catch { return null; }
-}
-function lsSet(key, value) {
-  try {
-    localStorage.setItem('movieCache::' + key, JSON.stringify({ t: Date.now(), v: value }));
-  } catch {}
-}
-
-/* ============================================
-   FETCH 1 PROXY
-============================================ */
-async function fetchViaProxy(proxyFn, targetUrl, ms) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ms);
-  try {
-    const res = await fetch(proxyFn(targetUrl), {
-      headers: { 'Accept': 'application/json' },
-      signal: ctrl.signal
-    });
-    if (res.status === 429) {
-      const e = new Error('429');
-      e.isRateLimit = true;
-      throw e;
-    }
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    if (!json || typeof json !== 'object') throw new Error('Not JSON');
-    if (json.error) throw new Error(json.error);
-    return json;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-/* ============================================
-   ⭐ RACE PROXY
-============================================ */
-async function raceProxy(targetUrl, timeout = PROXY_TIMEOUT) {
-  const sorted = [...PROXIES].sort((a, b) => {
-    if (a.name === fastestProxyName) return -1;
-    if (b.name === fastestProxyName) return 1;
-    return 0;
-  });
-
-  return new Promise((resolve, reject) => {
-    let pending = sorted.length;
-    let settled = false;
-    const errors = [];
-
-    sorted.forEach(proxy => {
-      fetchViaProxy(proxy.fn, targetUrl, timeout)
-        .then(json => {
-          if (settled) return;
-          settled = true;
-          fastestProxyName = proxy.name;
-          localStorage.setItem('fastestProxy', proxy.name);
-          console.log(`🏆 Proxy thắng: ${proxy.name}`);
-          resolve(json);
-        })
-        .catch(err => {
-          errors.push(`${proxy.name}: ${err.message}`);
-          pending--;
-          if (pending === 0 && !settled) {
-            settled = true;
-            reject(new Error('Tất cả proxy fail: ' + errors.join(' | ')));
-          }
-        });
-    });
-  });
-}/* ============================================
-   FETCH 1 PAGE — Dùng API HentaiOcean
-============================================ */
-async function fetchOnePage(page, perPage = PER_PAGE) {
-  const key = `page::${page}::${perPage}`;
-  const cached = lsGet(key);
-  if (cached) {
-    console.log(`💾 Cache page ${page}`);
-    return cached;
-  }
-
-  const params = new URLSearchParams({ page, per_page: perPage });
-  const targetUrl = `${API_BASE}?${params.toString()}`;
-
-  const json = await raceProxy(targetUrl);
-
-  // API HentaiOcean có thể trả về { data: [...] } hoặc { movies: [...] } hoặc mảng trực tiếp
-  let movies = [];
-  if (Array.isArray(json)) {
-    movies = json;
-  } else if (Array.isArray(json?.data)) {
-    movies = json.data;
-  } else if (Array.isArray(json?.movies)) {
-    movies = json.movies;
-  } else if (Array.isArray(json?.items)) {
-    movies = json.items;
-  }
-
-  // Chuẩn hóa dữ liệu về cấu trúc thống nhất
-  const normalized = movies.map(m => ({
-    code: m.urlname || m.id || '',
-    trans: [{ title: m.videoname || 'Không có tên', description: m.description || '' }],
-    thumbnail: m.coverimg ? IMAGE_BASE + m.coverimg : '',
-    quality: m.quality || 'HD',
-    duration: m.duration || '',
-    genres: (m.genres || []).map(g => ({ trans: [{ name: g.genre }] })),
-    sources: [{ type: 'HentaiOcean', link: EMBED_BASE + (m.urlname || '') }],
-    _raw: m
-  }));
-
-  const result = {
-    movies: normalized,
-    currentPage: page,
-    lastPage: normalized.length < perPage ? page : page + 1,
-    total: normalized.length,
-    hasNext: normalized.length >= perPage
-  };
-  lsSet(key, result);
-  return result;
-}
-
-/* ============================================
-   ⭐ BUILD INDEX — tải toàn bộ phim
-============================================ */
-async function buildIndex() {
-  if (indexPromise) return indexPromise;
-
-  indexPromise = (async () => {
-    try {
-      const raw = localStorage.getItem('movieIndex');
-      if (raw) {
-        const obj = JSON.parse(raw);
-        if (Date.now() - obj.t < INDEX_TTL && Array.isArray(obj.v) && obj.v.length > 0) {
-          movieIndex = obj.v;
-          indexReady = true;
-          console.log('📚 Index từ cache:', movieIndex.length);
-          return;
-        }
-      }
-    } catch {}
-
-    const seen = new Set();
-    const all = [];
-    allMovies.forEach(m => {
-      if (m.code && !seen.has(m.code)) { seen.add(m.code); all.push(m); }
-    });
-
-    const first = await fetchOnePage(1, PER_PAGE_INDEX);
-    const totalPages = Math.min(first.lastPage || 1, 20);
-
-    (first.movies || []).forEach(m => {
-      if (m.code && !seen.has(m.code)) { seen.add(m.code); all.push(m); }
-    });
-
-    const CONCURRENCY = 2;
-    const pages = [];
-    for (let i = 2; i <= totalPages; i++) pages.push(i);
-
-    for (let i = 0; i < pages.length; i += CONCURRENCY) {
-      const batch = pages.slice(i, i + CONCURRENCY);
-      const results = await Promise.all(
-        batch.map(p => fetchOnePage(p, PER_PAGE_INDEX).catch(() => ({ movies: [] })))
-      );
-      results.forEach(r => {
-        (r.movies || []).forEach(m => {
-          if (m.code && !seen.has(m.code)) { seen.add(m.code); all.push(m); }
-        });
-      });
-      if (i + CONCURRENCY < pages.length) await sleep(400);
-    }
-
-    movieIndex = all;
-    indexReady = true;
-    try {
-      localStorage.setItem('movieIndex', JSON.stringify({ t: Date.now(), v: movieIndex }));
-    } catch {}
-    console.log('✅ Index sẵn sàng:', movieIndex.length);
-  })();
-
-  return indexPromise;
-}
-
-function addToIndex(movies) {
-  if (!Array.isArray(movies)) return;
-  const existing = new Set(movieIndex.map(m => m.code));
-  movies.forEach(m => {
-    if (m.code && !existing.has(m.code)) {
-      movieIndex.push(m);
-      existing.add(m.code);
-    }
-  });
-  }/* ============================================
-   SKELETON
-============================================ */
-function renderSkeleton(count = 8) {
   const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  const frag = document.createDocumentFragment();
-  for (let i = 0; i < count; i++) {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="card-img-wrap"></div>
-      <div class="card-info">
-        <div style="height:14px;background:#25253a;border-radius:4px;margin-bottom:6px"></div>
-        <div style="height:14px;width:60%;background:#25253a;border-radius:4px"></div>
-      </div>`;
-    frag.appendChild(card);
-  }
-  grid.appendChild(frag);
-}
-
-/* ============================================
-   CREATE CARD
-============================================ */
-function createCard(movie) {
-  const card = document.createElement('div');
-  card.className = 'card';
-
-  const title    = movie.trans?.[0]?.title || movie.code || 'Không có tên';
-  const poster   = movie.thumbnail || '';
-  const quality  = movie.quality || '';
-  const duration = movie.duration || '';
-
-  card.innerHTML = `
-    <div class="card-img-wrap">
-      ${quality ? `<div class="card-badge">${quality}</div>` : ''}
-      <img alt="${title}" loading="lazy" decoding="async">
-    </div>
-    <div class="card-info">
-      <div class="card-title">${title}</div>
-      <div class="card-meta">
-        <span>${duration}</span>
-        <span class="duration">${quality}</span>
-      </div>
-    </div>
-  `;
-
-  const img = card.querySelector('img');
-  img.onload = () => {
-    img.classList.add('loaded');
-    img.parentElement.classList.add('loaded');
-  };
-  img.onerror = () => {
-    img.parentElement.classList.add('loaded');
-    img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%2325253a" width="200" height="300"/><text x="50%" y="50%" fill="%23666" font-size="14" text-anchor="middle" dy=".3em">No Image</text></svg>';
-  };
-  img.src = poster;
-
-  card.onclick = () => openModal(movie);
-  return card;
-}
-
-function renderMovies(movies, append = false) {
-  const grid = document.getElementById('grid');
-  if (!append) grid.innerHTML = '';
-  const frag = document.createDocumentFragment();
-  movies.forEach(m => frag.appendChild(createCard(m)));
-  grid.appendChild(frag);
-}/* ============================================
-   LỊCH SỬ XEM
-============================================ */
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem('watchHistory') || '[]'); }
-  catch { return []; }
-}
-function saveHistory(movie) {
-  const entry = {
-    code: movie.code,
-    trans: movie.trans,
-    thumbnail: movie.thumbnail,
-    quality: movie.quality,
-    duration: movie.duration,
-    genres: movie.genres,
-    sources: movie.sources,
-    viewedAt: Date.now()
-  };
-  let list = getHistory();
-  list = list.filter(m => m.code !== entry.code);
-  list.unshift(entry);
-  list = list.slice(0, HISTORY_MAX);
-  try { localStorage.setItem('watchHistory', JSON.stringify(list)); } catch {}
-  updateHistoryBadge();
-}
-function updateHistoryBadge() {
-  const count = getHistory().length;
-  const badge = document.getElementById('historyBadge');
-  badge.textContent = count;
-  badge.setAttribute('data-count', count);
-}
-function renderHistory() {
-  const list = getHistory();
-  const grid = document.getElementById('historyGrid');
-  grid.innerHTML = '';
-  if (list.length === 0) {
-    grid.innerHTML = `
-      <div class="empty-state" style="grid-column:1/-1">
-        <div class="icon">🕒</div>
-        <h3>Chưa có lịch sử xem</h3>
-        <p>Những phim bạn xem sẽ xuất hiện ở đây.</p>
-      </div>`;
-    updateHistoryBadge();
-    return;
-  }
-  const frag = document.createDocumentFragment();
-  list.forEach(m => frag.appendChild(createCard(m)));
-  grid.appendChild(frag);
-  updateHistoryBadge();
-}
-function clearHistory() {
-  if (!confirm('Xóa toàn bộ lịch sử xem?')) return;
-  localStorage.removeItem('watchHistory');
-  renderHistory();
-}
-
-/* ============================================
-   SWITCH VIEW
-============================================ */
-function switchView(view) {
-  currentView = view;
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.classList.toggle('active', tab.dataset.view === view);
-  });
+  const sentinel = document.getElementById('sentinel');
+  const statusEl = document.getElementById('status');
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearBtn');
+  const searchBox = document.getElementById('searchBox');
+  const searchInfo = document.getElementById('searchInfo');
+  const searchKeywordEl = document.getElementById('searchKeyword');
+  const searchCountEl = document.getElementById('searchCount');
   const homeView = document.getElementById('homeView');
   const historyView = document.getElementById('historyView');
-  const searchBox = document.getElementById('searchBox');
-  if (view === 'history') {
-    homeView.classList.add('hide');
-    historyView.classList.add('show');
-    searchBox.style.display = 'none';
-    renderHistory();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else {
-    historyView.classList.remove('show');
-    homeView.classList.remove('hide');
-    searchBox.style.display = '';
-  }
-}/* ============================================
-   LOAD TRANG
-============================================ */
-async function loadPage(page = 1, reset = false) {
-  if (isLoading || (!hasMore && !reset)) return;
-  isLoading = true;
+  const historyGrid = document.getElementById('historyGrid');
+  const historyBadge = document.getElementById('historyBadge');
+  const topBtn = document.getElementById('topBtn');
+  const modal = document.getElementById('modal');
+  const modalBody = document.getElementById('modalBody');
 
-  const statusEl = document.getElementById('status');
-  if (reset) {
+  // Hàm tách <hentai-slug> từ liên kết https://hentaiocean.com/watch/<hentai-slug>
+  function extractSlug(link) {
+    try {
+      const url = new URL(link);
+      const parts = url.pathname.split('/').filter(Boolean);
+      if (parts.includes('watch')) {
+        const idx = parts.indexOf('watch');
+        return parts[idx + 1] || '';
+      }
+      return parts[parts.length - 1] || '';
+    } catch(e) {
+      if (link.includes('/watch/')) {
+        return link.split('/watch/')[1].replace(/\//g, '');
+      }
+      return '';
+    }
+  }
+
+  // Hàm phát phim trực tiếp khi dán/nhập link watch
+  function playFromWatchUrl(watchUrl) {
+    const slug = extractSlug(watchUrl);
+    if (!slug) return false;
+
+    const movieObj = {
+      id: 'watch_' + slug,
+      title: `Phim: ${slug.replace(/-/g, ' ')}`,
+      link: watchUrl.startsWith('http') ? watchUrl : `https://hentaiocean.com/watch/${slug}`,
+      slug: slug,
+      embedUrl: `https://hentaiocean.com/embed/${slug}`,
+      img: 'https://via.placeholder.com/300x450/1a1a28/ff4d6d?text=' + encodeURIComponent(slug),
+      desc: `Phát trực tiếp từ đường dẫn: ${watchUrl}`,
+      pubDate: new Date().toLocaleDateString('vi-VN')
+    };
+
+    openModal(movieObj);
+    return true;
+  }
+
+  async function fetchRSS() {
+    statusEl.innerHTML = '<span class="spinner"></span> Đang tải danh sách phim...';
+
+    const endpoints = [
+      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`,
+      `https://corsproxy.io/?${encodeURIComponent(RSS_URL)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(RSS_URL)}`
+    ];
+
+    for (const url of endpoints) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) continue;
+
+        if (url.includes('rss2json.com')) {
+          const data = await response.json();
+          if (data.status === 'ok' && data.items && data.items.length > 0) {
+            parseJSONData(data.items);
+            return;
+          }
+        } else {
+          const text = await response.text();
+          if (text && (text.includes('<rss') || text.includes('<item'))) {
+            parseAndRenderRSS(text);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Endpoint error:', url, e);
+      }
+    }
+
+    statusEl.innerHTML = `
+      <div class="error-box">
+        ⚠️ Không thể kết nối máy chủ.<br>
+        <small style="color:#aaa;">Vui lòng bật 1.1.1.1 (WARP) hoặc chạy ứng dụng trên local server (Acode/TrebEdit).</small><br>
+        <button onclick="fetchRSS()">Thử lại</button>
+      </div>
+    `;
+  }
+   function parseJSONData(items) {
+    allMovies = items.map((item, index) => {
+      let img = item.thumbnail || (item.enclosure && item.enclosure.link) || '';
+      if (!img && item.description) {
+        const match = item.description.match(/src=["']([^"']+)["']/i);
+        if (match) img = match[1];
+      }
+
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = item.description || '';
+
+      const link = item.link || '#';
+      const slug = extractSlug(link);
+
+      return {
+        id: item.guid || link || index.toString(),
+        title: item.title || 'Phim mới',
+        link: link,
+        slug: slug,
+        embedUrl: link.includes('/watch/') ? link.replace('/watch/', '/embed/') : `https://hentaiocean.com/embed/${slug}`,
+        img: img || 'https://via.placeholder.com/300x450/1a1a28/888888?text=No+Cover',
+        desc: tempDiv.textContent || tempDiv.innerText || '',
+        pubDate: item.pubDate ? new Date(item.pubDate).toLocaleDateString('vi-VN') : ''
+      };
+    });
+
+    filteredMovies = [...allMovies];
     currentPage = 1;
-    hasMore = true;
-    allMovies = [];
-    if (!searchMode) renderSkeleton(8);
+    grid.innerHTML = '';
+    renderNextPage();
+    setupIntersectionObserver();
   }
 
-  statusEl.innerHTML = '<span class="spinner"></span>Đang tải...';
+  function parseAndRenderRSS(xmlText) {
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      const items = Array.from(xmlDoc.querySelectorAll('item'));
 
-  try {
-    const data = await fetchOnePage(page, PER_PAGE);
-    const movies = data.movies || [];
+      if (items.length === 0) {
+        statusEl.innerHTML = '<div class="end-msg">Không tìm thấy phim.</div>';
+        return;
+      }
 
-    if (movies.length === 0 && page === 1 && !searchMode) {
-      statusEl.innerHTML = `
-        <div class="error-box">
-          ⚠️ Không có phim nào.<br>
-          <small style="color:#888">Thử từ khóa khác hoặc tải lại trang.</small>
-        </div>`;
-      hasMore = false;
+      allMovies = items.map((item, index) => {
+        const title = item.querySelector('title')?.textContent?.trim() || 'Phim mới';
+        const link = item.querySelector('link')?.textContent?.trim() || '#';
+        const guid = item.querySelector('guid')?.textContent?.trim() || link || index.toString();
+        const pubDate = item.querySelector('pubDate')?.textContent?.trim() || '';
+
+        let description = item.querySelector('description')?.textContent?.trim() || '';
+        let img = item.querySelector('media\\:thumbnail, thumbnail')?.getAttribute('url') || 
+                  item.querySelector('enclosure')?.getAttribute('url') || '';
+
+        if (!img && description) {
+          const imgMatch = description.match(/src=["']([^"']+)["']/i);
+          if (imgMatch) img = imgMatch[1];
+        }
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = description;
+        const slug = extractSlug(link);
+
+        return {
+          id: guid,
+          title,
+          link,
+          slug: slug,
+          embedUrl: link.includes('/watch/') ? link.replace('/watch/', '/embed/') : `https://hentaiocean.com/embed/${slug}`,
+          img: img || 'https://via.placeholder.com/300x450/1a1a28/888888?text=No+Cover',
+          desc: tempDiv.textContent || tempDiv.innerText || '',
+          pubDate: pubDate ? new Date(pubDate).toLocaleDateString('vi-VN') : ''
+        };
+      });
+
+      filteredMovies = [...allMovies];
+      currentPage = 1;
+      grid.innerHTML = '';
+      renderNextPage();
+      setupIntersectionObserver();
+    } catch (err) {
+      statusEl.innerHTML = `<div class="error-box">Lỗi xử lý XML.<br><button onclick="fetchRSS()">Thử lại</button></div>`;
+    }
+  }
+   function renderNextPage() {
+    if (isLoading) return;
+    isLoading = true;
+
+    const start = (currentPage - 1) * pageSize;
+    const end = currentPage * pageSize;
+    const pageItems = filteredMovies.slice(start, end);
+
+    if (pageItems.length === 0 && currentPage === 1) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><div class="icon">🔍</div><h3>Không tìm thấy phim</h3></div>`;
+      statusEl.innerHTML = '';
       isLoading = false;
       return;
     }
 
-    renderMovies(movies, !reset);
-    allMovies = allMovies.concat(movies);
-    addToIndex(movies);
+    pageItems.forEach(movie => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.onclick = () => openModal(movie);
 
-    lastPage = data.lastPage || 1;
-    currentPage = data.currentPage || page;
+      card.innerHTML = `
+        <div class="card-img-wrap">
+          <img data-src="${escapeHtml(movie.img)}" alt="${escapeHtml(movie.title)}" 
+               onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');" 
+               onerror="this.src='https://via.placeholder.com/300x450/1a1a28/888888?text=Error'; this.classList.add('loaded');">
+        </div>
+        <div class="card-info">
+          <div class="card-title" title="${escapeHtml(movie.title)}">${escapeHtml(movie.title)}</div>
+          <div class="card-meta"><span>${movie.pubDate || 'HentaiOcean'}</span></div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
 
-    if (!data.hasNext || currentPage >= lastPage || movies.length === 0) {
-      hasMore = false;
-      statusEl.innerHTML = `<div class="end-msg">— Đã hiển thị ${allMovies.length} phim —</div>`;
+    lazyLoadImages();
+
+    if (end >= filteredMovies.length) {
+      statusEl.innerHTML = '<div class="end-msg">🎉 Đã tải xong tất cả phim!</div>';
     } else {
       statusEl.innerHTML = '';
-      // Prefetch trang kế tiếp (background)
-      setTimeout(() => {
-        fetchOnePage(currentPage + 1).catch(() => {});
-      }, 1500);
-    }
-  } catch (err) {
-    console.error(err);
-
-    if (err.message && err.message.includes('429')) {
-      statusEl.innerHTML = `
-        <div class="error-box">
-          ⏳ Máy chủ giới hạn, đợi 5s...
-        </div>`;
-      setTimeout(() => {
-        isLoading = false;
-        loadPage(page, false);
-      }, 5000);
-      return;
+      currentPage++;
     }
 
-    statusEl.innerHTML = `
-      <div class="error-box">
-        ❌ Lỗi tải dữ liệu: ${err.message}
-        <br><button onclick="retry()">Thử lại</button>
-      </div>`;
-  } finally {
     isLoading = false;
   }
-}
 
-function retry() {
-  hasMore = true;
-  loadPage(currentPage + 1, false);
-}/* ============================================
-   ⭐ SEARCH LOCAL — không phân biệt dấu, match 1 từ
-============================================ */
-function normalize(str) {
-  return (str || '').toString()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[đĐ]/g, 'd').toLowerCase().trim();
-}
+  function lazyLoadImages() {
+    const imgs = document.querySelectorAll('img[data-src]');
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.getAttribute('data-src');
+          img.removeAttribute('data-src');
+          obs.unobserve(img);
+        }
+      });
+    }, { rootMargin: '100px' });
 
-function searchLocal(kw) {
-  const needle = normalize(kw);
-  if (!needle) return [];
-  const results = [];
-  for (const m of movieIndex) {
-    const title = normalize(m.trans?.[0]?.title || '');
-    const code = normalize(m.code || '');
-    if (title.includes(needle) || code.includes(needle)) {
-      results.push(m); continue;
-    }
-    const words = title.split(/\s+/);
-    if (words.some(w => w.includes(needle) || needle.includes(w))) results.push(m);
+    imgs.forEach(img => observer.observe(img));
   }
-  return results;
-}
 
-async function doSearch(kw) {
-  kw = kw.trim();
-  if (!kw) { clearSearch(); return; }
-  if (currentView !== 'home') switchView('home');
+  function setupIntersectionObserver() {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !isLoading && (currentPage - 1) * pageSize < filteredMovies.length) {
+        renderNextPage();
+      }
+    }, { rootMargin: '200px' });
 
-  keyword = kw;
-  searchMode = true;
-  hasMore = false;
+    observer.observe(sentinel);
+  }
+    async function loadVideoFromAPI(slug, movie) {
+    const apiUrl = `https://hentaiocean.com/api?action=hentai&slug=${encodeURIComponent(slug)}`;
+    let apiData = null;
 
-  const statusEl = document.getElementById('status');
-  const searchInfo = document.getElementById('searchInfo');
-  const grid = document.getElementById('grid');
+    const proxyUrls = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`,
+      `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`
+    ];
 
-  searchInfo.classList.add('show');
-  document.getElementById('searchKeyword').textContent = kw;
-  document.getElementById('searchCount').textContent = '...';
-  grid.innerHTML = '';
+    for (const pUrl of proxyUrls) {
+      try {
+        const res = await fetch(pUrl);
+        if (res.ok) {
+          apiData = await res.json();
+          if (apiData) break;
+        }
+      } catch (e) {
+        console.warn('Proxy API error...', e);
+      }
+    }
 
-  if (!indexReady) {
-    renderSkeleton(8);
-    statusEl.innerHTML = '<span class="spinner"></span>Đang tải danh sách phim để tìm kiếm...';
+    const playerContainer = document.getElementById('playerContainer');
+    const sourceTabs = document.getElementById('sourceTabs');
+
+    if (apiData) {
+      const streamUrl = apiData.stream || apiData.embed || apiData.iframe || apiData.url || apiData.video;
+      if (streamUrl) {
+        if (typeof streamUrl === 'string' && streamUrl.includes('<iframe')) {
+          playerContainer.innerHTML = streamUrl;
+        } else {
+          playerContainer.innerHTML = `<iframe src="${escapeHtml(streamUrl)}" allowfullscreen frameborder="0"></iframe>`;
+        }
+        sourceTabs.innerHTML = `
+          <span class="tab-label">Nguồn:</span>
+          <button class="source-tab active" onclick="switchPlayerSource(this, '${escapeHtml(streamUrl)}')">Server API</button>
+          <button class="source-tab" onclick="switchPlayerSource(this, '${escapeHtml(movie.embedUrl)}')">Server Embed</button>
+          <button class="source-tab" onclick="switchPlayerSource(this, '${escapeHtml(movie.link)}')">Web Gốc</button>
+        `;
+        return;
+      }
+    }
+
+    playerContainer.innerHTML = `<iframe src="${escapeHtml(movie.embedUrl)}" allowfullscreen frameborder="0"></iframe>`;
+    sourceTabs.innerHTML = `
+      <span class="tab-label">Nguồn:</span>
+      <button class="source-tab active" onclick="switchPlayerSource(this, '${escapeHtml(movie.embedUrl)}')">Server Embed</button>
+      <button class="source-tab" onclick="switchPlayerSource(this, '${escapeHtml(movie.link)}')">Web Gốc</button>
+    `;
+  }
+
+  async function openModal(movie) {
+    addToHistory(movie);
+
+    modalBody.innerHTML = `
+      <div class="video" id="playerContainer">
+        <div class="player-status"><span class="spinner"></span> Đang tải player...</div>
+      </div>
+      <div class="source-tabs" id="sourceTabs"></div>
+      <div class="modal-info-wrap">
+        <h2>${escapeHtml(movie.title)}</h2>
+        ${movie.desc ? `<p>${escapeHtml(movie.desc)}</p>` : ''}
+        <p style="margin-top: 10px;">
+          <a href="${escapeHtml(movie.link)}" target="_blank" rel="noopener" style="color:#ff4d6d; text-decoration:none; font-weight:600;">
+            🔗 Mở trang phim gốc ↗
+          </a>
+        </p>
+      </div>
+    `;
+
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    if (movie.slug) {
+      await loadVideoFromAPI(movie.slug, movie);
+    } else {
+      document.getElementById('playerContainer').innerHTML = `<iframe src="${escapeHtml(movie.embedUrl)}" allowfullscreen frameborder="0"></iframe>`;
+    }
+  }
+
+  function switchPlayerSource(btn, url) {
+    document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const iframe = modalBody.querySelector('iframe');
+    if (iframe) iframe.src = url;
+  }
+
+  function closeModal() {
+    modal.classList.remove('show');
+    modalBody.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+    searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    searchBox.classList.toggle('has-value', query.length > 0);
+
+    // Nếu người dùng dán hoặc nhập đường dẫn watch/slug
+    if (query.includes('hentaiocean.com/watch/') || query.includes('/watch/')) {
+      if (playFromWatchUrl(query)) {
+        clearSearch();
+        return;
+      }
+    }
+
+    handleSearch(query);
+  });
+
+  clearBtn.addEventListener('click', clearSearch);
+
+  function handleSearch(query) {
+    const key = query.toLowerCase();
+    if (!key) {
+      searchInfo.classList.remove('show');
+      filteredMovies = [...allMovies];
+    } else {
+      filteredMovies = allMovies.filter(m => m.title.toLowerCase().includes(key) || m.slug.toLowerCase().includes(key));
+      searchKeywordEl.textContent = query;
+      searchCountEl.textContent = filteredMovies.length;
+      searchInfo.classList.add('show');
+    }
+    currentPage = 1;
+    grid.innerHTML = '';
+    renderNextPage();
+  }
+
+  function clearSearch() {
+    searchInput.value = '';
+    searchBox.classList.remove('has-value');
+    handleSearch('');
+  }
+
+  function switchView(view) {
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      t.classList.toggle('active', t.getAttribute('data-view') === view);
+    });
+
+    if (view === 'home') {
+      homeView.classList.remove('hide');
+      historyView.classList.remove('show');
+    } else {
+      homeView.classList.add('hide');
+      historyView.classList.add('show');
+      renderHistory();
+    }
+  }
+
+  function getHistory() {
     try {
-      await buildIndex();
+      return JSON.parse(localStorage.getItem('watched_history') || '[]');
     } catch (e) {
-      statusEl.innerHTML = `
-        <div class="error-box">
-          ❌ Không tải được danh sách: ${e.message}
-          <br><button onclick="doSearch('${kw.replace(/'/g, "\\'")}')">Thử lại</button>
-        </div>`;
+      return [];
+    }
+  }
+
+  function addToHistory(movie) {
+    let history = getHistory().filter(item => item.id !== movie.id);
+    history.unshift({ ...movie, watchedAt: new Date().toLocaleDateString('vi-VN') });
+    if (history.length > 50) history.pop();
+    localStorage.setItem('watched_history', JSON.stringify(history));
+    updateHistoryBadge();
+  }
+
+  function updateHistoryBadge() {
+    const history = getHistory();
+    historyBadge.setAttribute('data-count', history.length);
+    historyBadge.textContent = history.length;
+  }
+
+  function renderHistory() {
+    const history = getHistory();
+    if (history.length === 0) {
+      historyGrid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><div class="icon">🕒</div><h3>Chưa có lịch sử xem</h3></div>`;
       return;
     }
+
+    historyGrid.innerHTML = '';
+    history.forEach(movie => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.onclick = () => openModal(movie);
+      card.innerHTML = `
+        <div class="card-img-wrap loaded">
+          <img src="${escapeHtml(movie.img)}" class="loaded" alt="${escapeHtml(movie.title)}">
+        </div>
+        <div class="card-info">
+          <div class="card-title">${escapeHtml(movie.title)}</div>
+          <div class="card-meta"><span>${movie.watchedAt}</span></div>
+        </div>
+      `;
+      historyGrid.appendChild(card);
+    });
   }
 
-  grid.innerHTML = '';
-  const results = searchLocal(kw);
-
-  if (results.length === 0) {
-    statusEl.innerHTML = `
-      <div class="error-box">
-        🔍 Không tìm thấy "<b>${kw}</b>"
-        <br><small style="color:#888">Thử từ khóa khác</small>
-      </div>`;
-    document.getElementById('searchCount').textContent = '0';
-  } else {
-    renderMovies(results, false);
-    document.getElementById('searchCount').textContent = results.length;
-    statusEl.innerHTML = `<div class="end-msg">— ${results.length} kết quả (từ ${movieIndex.length} phim) —</div>`;
-  }
-}
-
-function clearSearch() {
-  keyword = '';
-  searchMode = false;
-  document.getElementById('searchInput').value = '';
-  document.getElementById('searchBox').classList.remove('has-value');
-  document.getElementById('searchInfo').classList.remove('show');
-  hasMore = true;
-  loadPage(1, true);
-}/* ============================================
-   INFINITE SCROLL
-============================================ */
-const sentinel = document.getElementById('sentinel');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting
-        && hasMore && !isLoading
-        && !searchMode
-        && currentView === 'home') {
-      loadPage(currentPage + 1, false);
+  function clearHistory() {
+    if (confirm('Xóa tất cả lịch sử xem phim?')) {
+      localStorage.removeItem('watched_history');
+      updateHistoryBadge();
+      renderHistory();
     }
-  });
-}, { rootMargin: '300px' });
-observer.observe(sentinel);
-
-/* ============================================
-   SEARCH INPUT
-============================================ */
-const searchInput = document.getElementById('searchInput');
-const searchBox = document.getElementById('searchBox');
-const clearBtn = document.getElementById('clearBtn');
-let searchTimeout;
-
-searchInput.addEventListener('input', () => {
-  const val = searchInput.value.trim();
-  searchBox.classList.toggle('has-value', val.length > 0);
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    if (val.length >= 1) doSearch(val);
-    else if (val.length === 0 && searchMode) clearSearch();
-  }, 250);
-});
-
-searchInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    clearTimeout(searchTimeout);
-    const val = searchInput.value.trim();
-    if (val) doSearch(val);
-  }
-  if (e.key === 'Escape') clearSearch();
-});
-
-/* ============================================
-   MODAL + PLAYER
-============================================ */
-let currentMovie = null;
-let currentSourceIndex = 0;
-let iframeLoadTimer = null;
-
-function openModal(movie) {
-  currentMovie = movie;
-  currentSourceIndex = 0;
-  saveHistory(movie);
-  document.querySelector('.modal').classList.add('wide');
-  renderPlayer();
-  document.getElementById('modal').classList.add('show');
-}
-
-function renderPlayer() {
-  const movie = currentMovie;
-  if (!movie) return;
-  const title = movie.trans?.[0]?.title || movie.code || 'Không có tên';
-  const desc = movie.trans?.[0]?.description || 'Chưa có mô tả.';
-  const quality = movie.quality || '—';
-  const duration = movie.duration || '—';
-  const genres = (movie.genres || [])
-    .map(g => g.trans?.[0]?.name).filter(Boolean).join(', ') || '—';
-
-  const sources = movie.sources || [];
-  const body = document.getElementById('modalBody');
-
-  if (sources.length === 0) {
-    body.innerHTML = `
-      <div class="modal-info-wrap" style="padding:40px 20px;text-align:center">
-        <h2>${title}</h2>
-        <p style="margin-top:16px">${desc}</p>
-        <p style="color:#ff4d6d;margin-top:16px">⚠️ Phim này chưa có nguồn phát.</p>
-      </div>`;
-    return;
   }
 
-  const tabsHtml = sources.length > 1 ? `
-    <div class="source-tabs">
-      <span class="tab-label">Server:</span>
-      ${sources.map((s, i) => `
-        <button class="source-tab ${i === currentSourceIndex ? 'active' : ''}"
-                onclick="switchSource(${i})">
-          ${s.type || 'Server ' + (i + 1)}
-        </button>`).join('')}
-    </div>` : '';
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('show')) closeModal(); });
+  window.addEventListener('scroll', () => { topBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
+  topBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
-  const currentSource = sources[currentSourceIndex] || sources[0];
-  const embedUrl = currentSource.link || '';
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
 
-  body.innerHTML = `
-    <div class="video" id="playerWrap">
-      <iframe id="playerFrame" src="${embedUrl}"
-              allowfullscreen
-              allow="autoplay; encrypted-media; picture-in-picture"
-              referrerpolicy="no-referrer" loading="lazy"></iframe>
-    </div>
-    ${tabsHtml}
-    <div class="modal-info-wrap">
-      <h2>${title}</h2>
-      <p><strong>Chất lượng:</strong> ${quality} · <strong>Thời lượng:</strong> ${duration}</p>
-      <p><strong>Thể loại:</strong> ${genres}</p>
-      <p style="margin-top:10px">${desc}</p>
-    </div>`;
-
-  startIframeWatchdog(embedUrl);
-}
-
-function startIframeWatchdog(embedUrl) {
-  clearTimeout(iframeLoadTimer);
-  let loaded = false;
-  const frame = document.getElementById('playerFrame');
-  if (frame) frame.addEventListener('load', () => { loaded = true; });
-  iframeLoadTimer = setTimeout(() => {
-    if (loaded) return;
-    const wrap = document.getElementById('playerWrap');
-    if (!wrap) return;
-    wrap.outerHTML = `
-      <div class="player-fallback">
-        <div class="icon">🎬</div>
-        <h3>Không thể nhúng player</h3>
-        <p>Server chặn iframe. Nhấn nút để xem tab mới.</p>
-        <a class="btn-open" href="${embedUrl}" target="_blank" rel="noopener">▶ Mở trong tab mới</a>
-      </div>`;
-  }, 3500);
-}
-
-function switchSource(index) {
-  currentSourceIndex = index;
-  document.querySelectorAll('.source-tab').forEach((el, i) => {
-    el.classList.toggle('active', i === index);
+  document.addEventListener('DOMContentLoaded', () => {
+    updateHistoryBadge();
+    fetchRSS();
   });
-  renderPlayer();
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('show');
-  clearTimeout(iframeLoadTimer);
-  const body = document.getElementById('modalBody');
-  setTimeout(() => { body.innerHTML = ''; }, 250);
-  document.querySelector('.modal').classList.remove('wide');
-  if (currentView === 'history') renderHistory();
-}
-
-document.getElementById('modal').onclick = (e) => {
-  if (e.target.id === 'modal') closeModal();
-};
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeModal();
-});/* ============================================
-   BACK TO TOP
-============================================ */
-const topBtn = document.getElementById('topBtn');
-window.addEventListener('scroll', () => {
-  topBtn.style.display = window.scrollY > 400 ? 'block' : 'none';
-});
-topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-clearBtn.addEventListener('click', clearSearch);
-
-/* ============================================
-   KHỞI ĐỘNG
-============================================ */
-console.log('🚀 Web phim HentaiOcean đang chạy...');
-console.log('⚡ Proxy nhanh nhất lần trước:', fastestProxyName);
-updateHistoryBadge();
-renderSkeleton(8);
-loadPage(1, true);
 </script>
 
 </body>
