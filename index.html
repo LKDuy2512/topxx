@@ -128,13 +128,7 @@
     border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 8px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .end-msg { text-align: center; padding: 20px; color: #777; font-size: 13px; }
-  .pagination { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:7px; padding:18px 8px 28px; }
-  .page-btn { min-width:38px; height:38px; padding:0 11px; border:1px solid #303047; border-radius:9px; background:#1a1a28; color:#ddd; font-size:13px; font-weight:600; cursor:pointer; }
-  .page-btn:hover:not(:disabled), .page-btn.active { background:#ff4d6d; border-color:#ff4d6d; color:#fff; }
-  .page-btn:disabled { opacity:.35; cursor:not-allowed; }
-  .page-info { width:100%; text-align:center; color:#888; font-size:12px; margin-top:5px; }
-  @media(max-width:480px){ .pagination{gap:5px}.page-btn{min-width:34px;height:35px;padding:0 8px} }
+  .end-msg { text-align: center; padding: 30px; color: #555; font-size: 14px; }
   .error-box { text-align: center; padding: 40px 20px; color: #ff4d6d; }
   .error-box button {
     margin-top: 16px; padding: 10px 24px; background: #ff4d6d; color: #fff;
@@ -236,163 +230,483 @@
   </div>
 </div>
 <script>
-const API = 'https://nguon.vsphim.com/api';
-let allMovies=[], filteredMovies=[], currentPage=1, totalPages=1, isLoading=false, currentQuery='', currentMode='latest';
-const $=id=>document.getElementById(id);
-const grid=$('grid'), statusEl=$('status'), searchInput=$('searchInput'), searchBox=$('searchBox'),
-searchInfo=$('searchInfo'), searchKeywordEl=$('searchKeyword'), searchCountEl=$('searchCount'),
-homeView=$('homeView'), historyView=$('historyView'), historyGrid=$('historyGrid'),
-historyBadge=$('historyBadge'), topBtn=$('topBtn'), modal=$('modal'), modalBody=$('modalBody');
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function imageOf(m){return m.poster_url||m.thumb_url||m.poster||m.thumb||m.cover||'https://placehold.co/300x450/1a1a28/fff?text=No+Cover'}
-function slugOf(m){return m.slug||m.id||m._id||''}
-function normalize(m){return {...m,id:String(m._id||m.id||m.slug||Math.random()),title:m.name||m.title||m.origin_name||'Phim',slug:slugOf(m),img:imageOf(m),link:`https://nguon.vsphim.com/phim/${slugOf(m)}`,pubDate:m.modified?.time?new Date(m.modified.time).toLocaleDateString('vi-VN'):(m.year||''),desc:m.content||m.description||''}}
-async function api(path){const r=await fetch(API+path,{headers:{accept:'application/json'}});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.status===false)throw Error(d.msg||'API báo lỗi');return d}
-function listFrom(d){
- // Hỗ trợ các dạng JSON phổ biến của API VSPHIM: items, data.items, data.categories...
- const preferred=['items','categories','the_loai','theLoai','genres','results','list','data'];
- function walk(node,depth=0){
-  if(Array.isArray(node))return node;
-  if(!node||typeof node!=='object'||depth>4)return [];
-  for(const key of preferred){if(key in node){const got=walk(node[key],depth+1);if(got.length)return got}}
-  return [];
- }
- return walk(d);
-}
-function addFilterUI(){
- const holder=document.createElement('div');holder.id='filterBar';holder.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px';
- holder.innerHTML=`<select id="categoryFilter" aria-label="Thể loại"><option value="">Tất cả thể loại</option></select>
- <select id="countryFilter" aria-label="Quốc gia"><option value="">Tất cả quốc gia</option></select>
- <select id="yearFilter" aria-label="Năm"><option value="">Tất cả năm</option></select>
- <select id="typeFilter"><option value="">Mọi loại phim</option><option value="single">Phim lẻ</option><option value="series">Phim bộ</option></select>
- <select id="statusFilter"><option value="">Mọi trạng thái</option><option value="completed">Hoàn thành</option><option value="ongoing">Đang cập nhật</option></select>
- <select id="codeFilter"><option value="">Mọi danh mục</option></select>
- <button id="applyFilters" class="source-tab">Lọc phim</button>`;
- grid.parentNode.insertBefore(holder,grid);
- holder.querySelectorAll('select').forEach(el=>el.style.cssText='background:#1a1a28;color:#fff;border:1px solid #2a2a3e;border-radius:8px;padding:9px;max-width:100%');
- $('applyFilters').onclick=()=>{currentMode='filters';currentQuery='';currentPage=1;loadMovies(true)};
-}
-const FALLBACK_FILTERS={
- categoryFilter:[['hanh-dong','Hành Động'],['tinh-cam','Tình Cảm'],['hai-huoc','Hài Hước'],['co-trang','Cổ Trang'],['tam-ly','Tâm Lý'],['hinh-su','Hình Sự'],['chien-tranh','Chiến Tranh'],['the-thao','Thể Thao'],['vo-thuat','Võ Thuật'],['vien-tuong','Viễn Tưởng'],['phieu-luu','Phiêu Lưu'],['khoa-hoc','Khoa Học'],['kinh-di','Kinh Dị'],['am-nhac','Âm Nhạc'],['than-thoai','Thần Thoại'],['tai-lieu','Tài Liệu'],['gia-dinh','Gia Đình'],['chinh-kich','Chính Kịch'],['bi-an','Bí Ẩn'],['hoc-duong','Học Đường'],['hoat-hinh','Hoạt Hình']],
- countryFilter:[['trung-quoc','Trung Quốc'],['han-quoc','Hàn Quốc'],['nhat-ban','Nhật Bản'],['thai-lan','Thái Lan'],['au-my','Âu Mỹ'],['viet-nam','Việt Nam'],['hong-kong','Hồng Kông'],['dai-loan','Đài Loan'],['an-do','Ấn Độ'],['anh','Anh'],['phap','Pháp']],
- codeFilter:[]
-};
-function optionPairs(data,id){
- let arr=listFrom(data);
- arr=arr.filter(x=>{
-  if(typeof x==='number')return id==='yearFilter';
-  if(typeof x==='string')return id!=='categoryFilter'||x.trim().length>0;
-  if(!x||typeof x!=='object')return false;
-  // Không cho bản ghi phim lọt vào danh sách thể loại.
-  const isMovie=!!(x.poster_url||x.thumb_url||x.origin_name||x.poster||x.thumb||x.cover||x.content||x.episodes||x.year&&x.poster||x.movie_id);
-  if(isMovie)return false;
-  if(id==='yearFilter')return /^\d{4}$/.test(String(x.year??x.name??x.title??x.slug??x.value??''));
-  if(id==='categoryFilter')return !!(x.slug&& (x.name||x.title||x.label));
-  return !!(x.slug||x.code||x.key||x.value||x.name||x.title);
- });
- return arr.map(x=>{
-  if(typeof x==='string'||typeof x==='number')return [String(x),String(x)];
-  const val=id==='categoryFilter'?(x.slug??x.value??x.code):(x.slug??x.year??x.code??x.key??x.value??x.name??x.title);
-  const label=x.name??x.title??x.label??x.year??x.code??val;
-  return val==null?null:[String(val),String(label)];
- }).filter(x=>x&&x[0].trim()&&x[1].trim());
-}
-async function fillOptions(endpoint,id,labelKey='name'){
- const el=$(id);if(!el)return;
- while(el.options.length>1)el.remove(1);
- try{
-  let d;
-  if(id==='yearFilter'){
-   try{d=await api('/nam-phat-hanh')}catch(_){d=await api('/nam')}
-  }else d=await api(endpoint);
-  let pairs=optionPairs(d,id);
-  if(id==='yearFilter'){
-   const years=[];
-   for(const pair of pairs){const raw=String(pair[0]??'').trim();const match=raw.match(/(?:^|\D)((?:19|20)\d{2})(?:\D|$)/);if(match)years.push(match[1]);}
-   pairs=[...new Set(years)].sort((a,b)=>Number(b)-Number(a)).map(y=>[y,y]);
+  const RSS_URL = 'https://hentaiocean.com/rss.xml';
+
+  let allMovies = [];
+  let filteredMovies = [];
+  let currentPage = 1;
+  const pageSize = 20;
+  let isLoading = false;
+
+  const grid = document.getElementById('grid');
+  const sentinel = document.getElementById('sentinel');
+  const statusEl = document.getElementById('status');
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearBtn');
+  const searchBox = document.getElementById('searchBox');
+  const searchInfo = document.getElementById('searchInfo');
+  const searchKeywordEl = document.getElementById('searchKeyword');
+  const searchCountEl = document.getElementById('searchCount');
+  const homeView = document.getElementById('homeView');
+  const historyView = document.getElementById('historyView');
+  const historyGrid = document.getElementById('historyGrid');
+  const historyBadge = document.getElementById('historyBadge');
+  const topBtn = document.getElementById('topBtn');
+  const modal = document.getElementById('modal');
+  const modalBody = document.getElementById('modalBody');
+
+  // Hàm tách <hentai-slug> từ liên kết https://hentaiocean.com/watch/<hentai-slug>
+  function extractSlug(link) {
+    try {
+      const url = new URL(link);
+      const parts = url.pathname.split('/').filter(Boolean);
+      if (parts.includes('watch')) {
+        const idx = parts.indexOf('watch');
+        return parts[idx + 1] || '';
+      }
+      return parts[parts.length - 1] || '';
+    } catch(e) {
+      if (link.includes('/watch/')) {
+        return link.split('/watch/')[1].replace(/\//g, '');
+      }
+      return '';
+    }
   }
-  if(!pairs.length){
-   console.warn('API không trả danh mục hợp lệ:',endpoint,d);
-   if(id==='yearFilter')pairs=Array.from({length:new Date().getFullYear()-1970+1},(_,i)=>{const y=String(new Date().getFullYear()-i);return [y,y]});
-   else if(id==='countryFilter')pairs=FALLBACK_FILTERS.countryFilter||[];
-   else if(id==='codeFilter')pairs=FALLBACK_FILTERS.codeFilter||[];
+
+  // Hàm phát phim trực tiếp khi dán/nhập link watch
+  function playFromWatchUrl(watchUrl) {
+    const slug = extractSlug(watchUrl);
+    if (!slug) return false;
+
+    const movieObj = {
+      id: 'watch_' + slug,
+      title: `Phim: ${slug.replace(/-/g, ' ')}`,
+      link: watchUrl.startsWith('http') ? watchUrl : `https://hentaiocean.com/watch/${slug}`,
+      slug: slug,
+      embedUrl: `https://hentaiocean.com/embed/${slug}`,
+      img: 'https://via.placeholder.com/300x450/1a1a28/ff4d6d?text=' + encodeURIComponent(slug),
+      desc: `Phát trực tiếp từ đường dẫn: ${watchUrl}`,
+      pubDate: new Date().toLocaleDateString('vi-VN')
+    };
+
+    openModal(movieObj);
+    return true;
   }
-  pairs.forEach(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;el.appendChild(o)});
- }catch(e){
-  console.warn('Không tải được danh mục API:',endpoint,e);
-  const pairs=id==='yearFilter'?Array.from({length:new Date().getFullYear()-1970+1},(_,i)=>{const y=String(new Date().getFullYear()-i);return [y,y]}):(FALLBACK_FILTERS[id]||[]);
-  pairs.forEach(([v,l])=>{const o=document.createElement('option');o.value=v;o.textContent=l;el.appendChild(o)});
- }
-}
-function queryFilters(){const p=new URLSearchParams({page:String(currentPage),limit:'24'});[['year','yearFilter'],['country','countryFilter'],['category','categoryFilter'],['type','typeFilter'],['status','statusFilter'],['code','codeFilter']].forEach(([k,id])=>{const v=$(id)?.value;if(v)p.set(k,v)});return p.toString()}
-async function loadMovies(reset=false){
- if(isLoading)return;
- isLoading=true;
- if(reset){currentPage=1;grid.innerHTML=''}
- statusEl.innerHTML='<div class="loading-more"><span class="spinner"></span> Đang tải phim...</div>';
- try{
-  let endpoint;
-  if(currentQuery)endpoint=`/tim-kiem?keyword=${encodeURIComponent(currentQuery)}&limit=24&page=${currentPage}`;
-  else if(currentMode==='latest'&&!hasFilters())endpoint=`/danh-sach/phim-moi-cap-nhat?page=${currentPage}&limit=24`;
-  else endpoint=`/danh-sach?${queryFilters()}`;
-  const d=await api(endpoint);let arr=listFrom(d);
-  if(!arr.length&&currentMode==='latest'&&currentPage===1){const fallback=await api('/danh-sach?page=1&limit=24');arr=listFrom(fallback)}
-  const movies=arr.map(normalize);
-  const pg=d.pagination||d.meta||{};
-  const totalItems=Number(pg.totalItems??pg.total_items??pg.total??d.totalItems??d.total_items??0);
-  totalPages=Number(pg.totalPages??pg.total_pages??pg.last_page??d.totalPages??d.total_pages??(totalItems?Math.ceil(totalItems/24):currentPage));
-  if(!Number.isFinite(totalPages)||totalPages<1)totalPages=currentPage;
-  grid.innerHTML='';
-  allMovies=movies;filteredMovies=movies;
-  renderMovies(movies);
-  if(!movies.length)statusEl.innerHTML='<div class="end-msg">Không tìm thấy phim phù hợp.</div>';
-  else renderPagination(totalItems);
-  if(currentQuery){searchInfo.classList.add('show');searchKeywordEl.textContent=currentQuery;searchCountEl.textContent=totalItems||movies.length}
-  else searchInfo.classList.remove('show');
- }catch(e){statusEl.innerHTML=`<div class="error-box">⚠️ Không tải được API: ${esc(e.message)}<br><button onclick="loadMovies(true)">Thử lại</button></div>`}
- finally{isLoading=false}
-}
-function renderPagination(totalItems=0){
- if(totalPages<=1){statusEl.innerHTML=totalItems?`<div class="end-msg">Tổng ${totalItems} phim</div>`:'<div class="end-msg">Đã hiển thị hết phim</div>';return}
- const from=Math.max(1,currentPage-2),to=Math.min(totalPages, currentPage+2);
- let html='<div class="pagination">';
- html+=`<button class="page-btn" data-page="${currentPage-1}" ${currentPage<=1?'disabled':''} aria-label="Trang trước">‹</button>`;
- if(from>1){html+='<button class="page-btn" data-page="1">1</button>';if(from>2)html+='<span style="color:#777;padding:0 2px">…</span>'}
- for(let p=from;p<=to;p++)html+=`<button class="page-btn ${p===currentPage?'active':''}" data-page="${p}" ${p===currentPage?'aria-current="page"':''}>${p}</button>`;
- if(to<totalPages){if(to<totalPages-1)html+='<span style="color:#777;padding:0 2px">…</span>';html+=`<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`}
- html+=`<button class="page-btn" data-page="${currentPage+1}" ${currentPage>=totalPages?'disabled':''} aria-label="Trang sau">›</button>`;
- html+=`<div class="page-info">Trang ${currentPage} / ${totalPages}${totalItems?` · Tổng ${totalItems} phim`:''}</div></div>`;
- statusEl.innerHTML=html;
- statusEl.querySelectorAll('button[data-page]').forEach(btn=>btn.addEventListener('click',()=>{const page=Number(btn.dataset.page);if(page>=1&&page<=totalPages&&page!==currentPage){currentPage=page;loadMovies(false);window.scrollTo({top:0,behavior:'smooth'})}}));
-}
-function hasFilters(){return ['categoryFilter','countryFilter','yearFilter','typeFilter','statusFilter','codeFilter'].some(id=>$(id)?.value)}
-function renderMovies(movies){if(!movies.length&&currentPage===1){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1">Không tìm thấy phim</div>';return}
- movies.forEach(m=>{const card=document.createElement('div');card.className='card';card.onclick=()=>openModal(m);card.innerHTML=`<div class="card-img-wrap"><img loading="lazy" src="${esc(m.img)}" alt="${esc(m.title)}" onload="this.classList.add('loaded');this.parentElement.classList.add('loaded')" onerror="this.src='https://placehold.co/300x450/1a1a28/fff?text=No+Cover'"></div><div class="card-info"><div class="card-title">${esc(m.title)}</div><div class="card-meta"><span>${esc(m.year||m.pubDate||'')}</span><span>${esc(m.quality||'')}</span></div></div>`;grid.appendChild(card)})}
-async function openModal(movie){addToHistory(movie);modalBody.innerHTML=`<div class="video" id="playerContainer"><div class="player-status"><span class="spinner"></span> Đang lấy nguồn phát...</div></div><div class="source-tabs" id="sourceTabs"></div><div class="modal-info-wrap"><h2>${esc(movie.title)}</h2><p>${esc(movie.origin_name||'')} · ${esc(movie.year||'')} · ${esc(movie.quality||'')}</p><p>${esc(movie.desc||'')}</p></div>`;modal.classList.add('show');document.body.style.overflow='hidden';
- try{let d=await api('/phim/'+encodeURIComponent(movie.slug));const m=d.movie||d.data||movie;const servers=d.episodes||m.episodes||[];const tabs=$('sourceTabs'),player=$('playerContainer');let sources=[];
- servers.forEach((server,si)=>(server.server_data||server.episodes||[]).forEach((ep,ei)=>{const url=ep.link_embed||ep.link_m3u8||ep.url||ep.link;if(url)sources.push({name:(server.server_name||`Nguồn ${si+1}`)+' · '+(ep.name||`Tập ${ei+1}`),url,kind:ep.link_embed?'embed':'video'})}));
- if(!sources.length){const candidates=[m.link_embed,m.embed_url,m.embed,m.player_url,m.link_m3u8,m.url];candidates.filter(Boolean).forEach((url,i)=>sources.push({name:`Nguồn ${i+1}`,url,kind:String(url).includes('m3u8')?'video':'embed'}))}
- if(!sources.length){player.innerHTML='<div class="player-status">API chưa trả về link phát cho phim này.</div>';tabs.innerHTML='';return}
- function play(src,btn){tabs.querySelectorAll('button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');if(src.kind==='video'&&/\\.m3u8($|\\?)/i.test(src.url)){player.innerHTML=`<video controls playsinline style="width:100%;height:100%;background:#000" src="${esc(src.url)}"></video>`}else{player.innerHTML=`<iframe src="${esc(src.url)}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer" style="width:100%;height:100%;border:0"></iframe>`}}
- tabs.innerHTML='<span class="tab-label">Nguồn phát / tập:</span>'+sources.map((s,i)=>`<button class="source-tab ${i===0?'active':''}" data-i="${i}">${esc(s.name)}</button>`).join('');
- tabs.querySelectorAll('button[data-i]').forEach((b,i)=>b.onclick=()=>play(sources[i],b));play(sources[0],tabs.querySelector('button[data-i="0"]'));
- }catch(e){$('playerContainer').innerHTML=`<div class="player-status">Không lấy được thông tin phát: ${esc(e.message)}. Thử mở lại phim.</div>`;$('sourceTabs').innerHTML=''}
-}
-function closeModal(){modal.classList.remove('show');modalBody.innerHTML='';document.body.style.overflow=''}
-function switchView(view){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===view));homeView.classList.toggle('hide',view!=='home');historyView.classList.toggle('show',view==='history');if(view==='history')renderHistory()}
-function getHistory(){try{return JSON.parse(localStorage.getItem('watched_history')||'[]')}catch(e){return []}}
-function addToHistory(m){let h=getHistory().filter(x=>x.id!==m.id);h.unshift({...m,watchedAt:new Date().toLocaleDateString('vi-VN')});localStorage.setItem('watched_history',JSON.stringify(h.slice(0,50)));updateHistoryBadge()}
-function updateHistoryBadge(){const n=getHistory().length;historyBadge.textContent=n;historyBadge.dataset.count=n}
-function renderHistory(){const h=getHistory();historyGrid.innerHTML='';if(!h.length){historyGrid.innerHTML='<div class="empty-state" style="grid-column:1/-1">🕒 Chưa có lịch sử xem</div>';return}h.forEach(m=>{const c=document.createElement('div');c.className='card';c.onclick=()=>openModal(m);c.innerHTML=`<div class="card-img-wrap loaded"><img class="loaded" src="${esc(m.img)}" alt="${esc(m.title)}"></div><div class="card-info"><div class="card-title">${esc(m.title)}</div><div class="card-meta">${esc(m.watchedAt||'')}</div></div>`;historyGrid.appendChild(c)})}
-function clearHistory(){if(confirm('Xóa tất cả lịch sử xem phim?')){localStorage.removeItem('watched_history');updateHistoryBadge();renderHistory()}}
-function clearSearch(){searchInput.value='';searchBox.classList.remove('has-value');currentQuery='';searchInfo.classList.remove('show');currentMode='latest';loadMovies(true)}
-let searchTimer;
-searchInput.addEventListener('input',()=>{const q=searchInput.value.trim();searchBox.classList.toggle('has-value',!!q);clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentQuery=q;currentMode=q?'search':'latest';loadMovies(true)},350)});
-$('clearBtn').onclick=clearSearch;
-modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});window.addEventListener('scroll',()=>topBtn.style.display=window.scrollY>300?'block':'none');topBtn.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
-addFilterUI();
-Promise.all([fillOptions('/the-loai','categoryFilter'),fillOptions('/quoc-gia','countryFilter'),fillOptions('/nam','yearFilter','year'),fillOptions('/code','codeFilter')]).finally(()=>loadMovies(true));
-updateHistoryBadge();
+
+  async function fetchRSS() {
+    statusEl.innerHTML = '<span class="spinner"></span> Đang tải danh sách phim...';
+
+    const endpoints = [
+      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`,
+      `https://corsproxy.io/?${encodeURIComponent(RSS_URL)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(RSS_URL)}`
+    ];
+
+    for (const url of endpoints) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) continue;
+
+        if (url.includes('rss2json.com')) {
+          const data = await response.json();
+          if (data.status === 'ok' && data.items && data.items.length > 0) {
+            parseJSONData(data.items);
+            return;
+          }
+        } else {
+          const text = await response.text();
+          if (text && (text.includes('<rss') || text.includes('<item'))) {
+            parseAndRenderRSS(text);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Endpoint error:', url, e);
+      }
+    }
+
+    statusEl.innerHTML = `
+      <div class="error-box">
+        ⚠️ Không thể kết nối máy chủ.<br>
+        <small style="color:#aaa;">Vui lòng bật 1.1.1.1 (WARP) hoặc chạy ứng dụng trên local server (Acode/TrebEdit).</small><br>
+        <button onclick="fetchRSS()">Thử lại</button>
+      </div>
+    `;
+  }
+   function parseJSONData(items) {
+    allMovies = items.map((item, index) => {
+      let img = item.thumbnail || (item.enclosure && item.enclosure.link) || '';
+      if (!img && item.description) {
+        const match = item.description.match(/src=["']([^"']+)["']/i);
+        if (match) img = match[1];
+      }
+
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = item.description || '';
+
+      const link = item.link || '#';
+      const slug = extractSlug(link);
+
+      return {
+        id: item.guid || link || index.toString(),
+        title: item.title || 'Phim mới',
+        link: link,
+        slug: slug,
+        embedUrl: link.includes('/watch/') ? link.replace('/watch/', '/embed/') : `https://hentaiocean.com/embed/${slug}`,
+        img: img || 'https://via.placeholder.com/300x450/1a1a28/888888?text=No+Cover',
+        desc: tempDiv.textContent || tempDiv.innerText || '',
+        pubDate: item.pubDate ? new Date(item.pubDate).toLocaleDateString('vi-VN') : ''
+      };
+    });
+
+    filteredMovies = [...allMovies];
+    currentPage = 1;
+    grid.innerHTML = '';
+    renderNextPage();
+    setupIntersectionObserver();
+  }
+
+  function parseAndRenderRSS(xmlText) {
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      const items = Array.from(xmlDoc.querySelectorAll('item'));
+
+      if (items.length === 0) {
+        statusEl.innerHTML = '<div class="end-msg">Không tìm thấy phim.</div>';
+        return;
+      }
+
+      allMovies = items.map((item, index) => {
+        const title = item.querySelector('title')?.textContent?.trim() || 'Phim mới';
+        const link = item.querySelector('link')?.textContent?.trim() || '#';
+        const guid = item.querySelector('guid')?.textContent?.trim() || link || index.toString();
+        const pubDate = item.querySelector('pubDate')?.textContent?.trim() || '';
+
+        let description = item.querySelector('description')?.textContent?.trim() || '';
+        let img = item.querySelector('media\\:thumbnail, thumbnail')?.getAttribute('url') || 
+                  item.querySelector('enclosure')?.getAttribute('url') || '';
+
+        if (!img && description) {
+          const imgMatch = description.match(/src=["']([^"']+)["']/i);
+          if (imgMatch) img = imgMatch[1];
+        }
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = description;
+        const slug = extractSlug(link);
+
+        return {
+          id: guid,
+          title,
+          link,
+          slug: slug,
+          embedUrl: link.includes('/watch/') ? link.replace('/watch/', '/embed/') : `https://hentaiocean.com/embed/${slug}`,
+          img: img || 'https://via.placeholder.com/300x450/1a1a28/888888?text=No+Cover',
+          desc: tempDiv.textContent || tempDiv.innerText || '',
+          pubDate: pubDate ? new Date(pubDate).toLocaleDateString('vi-VN') : ''
+        };
+      });
+
+      filteredMovies = [...allMovies];
+      currentPage = 1;
+      grid.innerHTML = '';
+      renderNextPage();
+      setupIntersectionObserver();
+    } catch (err) {
+      statusEl.innerHTML = `<div class="error-box">Lỗi xử lý XML.<br><button onclick="fetchRSS()">Thử lại</button></div>`;
+    }
+  }
+   function renderNextPage() {
+    if (isLoading) return;
+    isLoading = true;
+
+    const start = (currentPage - 1) * pageSize;
+    const end = currentPage * pageSize;
+    const pageItems = filteredMovies.slice(start, end);
+
+    if (pageItems.length === 0 && currentPage === 1) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><div class="icon">🔍</div><h3>Không tìm thấy phim</h3></div>`;
+      statusEl.innerHTML = '';
+      isLoading = false;
+      return;
+    }
+
+    pageItems.forEach(movie => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.onclick = () => openModal(movie);
+
+      card.innerHTML = `
+        <div class="card-img-wrap">
+          <img data-src="${escapeHtml(movie.img)}" alt="${escapeHtml(movie.title)}" 
+               onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');" 
+               onerror="this.src='https://via.placeholder.com/300x450/1a1a28/888888?text=Error'; this.classList.add('loaded');">
+        </div>
+        <div class="card-info">
+          <div class="card-title" title="${escapeHtml(movie.title)}">${escapeHtml(movie.title)}</div>
+          <div class="card-meta"><span>${movie.pubDate || 'HentaiOcean'}</span></div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    lazyLoadImages();
+
+    if (end >= filteredMovies.length) {
+      statusEl.innerHTML = '<div class="end-msg">🎉 Đã tải xong tất cả phim!</div>';
+    } else {
+      statusEl.innerHTML = '';
+      currentPage++;
+    }
+
+    isLoading = false;
+  }
+
+  function lazyLoadImages() {
+    const imgs = document.querySelectorAll('img[data-src]');
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.getAttribute('data-src');
+          img.removeAttribute('data-src');
+          obs.unobserve(img);
+        }
+      });
+    }, { rootMargin: '100px' });
+
+    imgs.forEach(img => observer.observe(img));
+  }
+
+  function setupIntersectionObserver() {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !isLoading && (currentPage - 1) * pageSize < filteredMovies.length) {
+        renderNextPage();
+      }
+    }, { rootMargin: '200px' });
+
+    observer.observe(sentinel);
+  }
+    async function loadVideoFromAPI(slug, movie) {
+    const apiUrl = `https://hentaiocean.com/api?action=hentai&slug=${encodeURIComponent(slug)}`;
+    let apiData = null;
+
+    const proxyUrls = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`,
+      `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`
+    ];
+
+    for (const pUrl of proxyUrls) {
+      try {
+        const res = await fetch(pUrl);
+        if (res.ok) {
+          apiData = await res.json();
+          if (apiData) break;
+        }
+      } catch (e) {
+        console.warn('Proxy API error...', e);
+      }
+    }
+
+    const playerContainer = document.getElementById('playerContainer');
+    const sourceTabs = document.getElementById('sourceTabs');
+
+    if (apiData) {
+      const streamUrl = apiData.stream || apiData.embed || apiData.iframe || apiData.url || apiData.video;
+      if (streamUrl) {
+        if (typeof streamUrl === 'string' && streamUrl.includes('<iframe')) {
+          playerContainer.innerHTML = streamUrl;
+        } else {
+          playerContainer.innerHTML = `<iframe src="${escapeHtml(streamUrl)}" allowfullscreen frameborder="0"></iframe>`;
+        }
+        sourceTabs.innerHTML = `
+          <span class="tab-label">Nguồn:</span>
+          <button class="source-tab active" onclick="switchPlayerSource(this, '${escapeHtml(streamUrl)}')">Server API</button>
+          <button class="source-tab" onclick="switchPlayerSource(this, '${escapeHtml(movie.embedUrl)}')">Server Embed</button>
+          <button class="source-tab" onclick="switchPlayerSource(this, '${escapeHtml(movie.link)}')">Web Gốc</button>
+        `;
+        return;
+      }
+    }
+
+    playerContainer.innerHTML = `<iframe src="${escapeHtml(movie.embedUrl)}" allowfullscreen frameborder="0"></iframe>`;
+    sourceTabs.innerHTML = `
+      <span class="tab-label">Nguồn:</span>
+      <button class="source-tab active" onclick="switchPlayerSource(this, '${escapeHtml(movie.embedUrl)}')">Server Embed</button>
+      <button class="source-tab" onclick="switchPlayerSource(this, '${escapeHtml(movie.link)}')">Web Gốc</button>
+    `;
+  }
+
+  async function openModal(movie) {
+    addToHistory(movie);
+
+    modalBody.innerHTML = `
+      <div class="video" id="playerContainer">
+        <div class="player-status"><span class="spinner"></span> Đang tải player...</div>
+      </div>
+      <div class="source-tabs" id="sourceTabs"></div>
+      <div class="modal-info-wrap">
+        <h2>${escapeHtml(movie.title)}</h2>
+        ${movie.desc ? `<p>${escapeHtml(movie.desc)}</p>` : ''}
+        <p style="margin-top: 10px;">
+          <a href="${escapeHtml(movie.link)}" target="_blank" rel="noopener" style="color:#ff4d6d; text-decoration:none; font-weight:600;">
+            🔗 Mở trang phim gốc ↗
+          </a>
+        </p>
+      </div>
+    `;
+
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    if (movie.slug) {
+      await loadVideoFromAPI(movie.slug, movie);
+    } else {
+      document.getElementById('playerContainer').innerHTML = `<iframe src="${escapeHtml(movie.embedUrl)}" allowfullscreen frameborder="0"></iframe>`;
+    }
+  }
+
+  function switchPlayerSource(btn, url) {
+    document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const iframe = modalBody.querySelector('iframe');
+    if (iframe) iframe.src = url;
+  }
+
+  function closeModal() {
+    modal.classList.remove('show');
+    modalBody.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+    searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    searchBox.classList.toggle('has-value', query.length > 0);
+
+    // Nếu người dùng dán hoặc nhập đường dẫn watch/slug
+    if (query.includes('hentaiocean.com/watch/') || query.includes('/watch/')) {
+      if (playFromWatchUrl(query)) {
+        clearSearch();
+        return;
+      }
+    }
+
+    handleSearch(query);
+  });
+
+  clearBtn.addEventListener('click', clearSearch);
+
+  function handleSearch(query) {
+    const key = query.toLowerCase();
+    if (!key) {
+      searchInfo.classList.remove('show');
+      filteredMovies = [...allMovies];
+    } else {
+      filteredMovies = allMovies.filter(m => m.title.toLowerCase().includes(key) || m.slug.toLowerCase().includes(key));
+      searchKeywordEl.textContent = query;
+      searchCountEl.textContent = filteredMovies.length;
+      searchInfo.classList.add('show');
+    }
+    currentPage = 1;
+    grid.innerHTML = '';
+    renderNextPage();
+  }
+
+  function clearSearch() {
+    searchInput.value = '';
+    searchBox.classList.remove('has-value');
+    handleSearch('');
+  }
+
+  function switchView(view) {
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      t.classList.toggle('active', t.getAttribute('data-view') === view);
+    });
+
+    if (view === 'home') {
+      homeView.classList.remove('hide');
+      historyView.classList.remove('show');
+    } else {
+      homeView.classList.add('hide');
+      historyView.classList.add('show');
+      renderHistory();
+    }
+  }
+
+  function getHistory() {
+    try {
+      return JSON.parse(localStorage.getItem('watched_history') || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function addToHistory(movie) {
+    let history = getHistory().filter(item => item.id !== movie.id);
+    history.unshift({ ...movie, watchedAt: new Date().toLocaleDateString('vi-VN') });
+    if (history.length > 50) history.pop();
+    localStorage.setItem('watched_history', JSON.stringify(history));
+    updateHistoryBadge();
+  }
+
+  function updateHistoryBadge() {
+    const history = getHistory();
+    historyBadge.setAttribute('data-count', history.length);
+    historyBadge.textContent = history.length;
+  }
+
+  function renderHistory() {
+    const history = getHistory();
+    if (history.length === 0) {
+      historyGrid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><div class="icon">🕒</div><h3>Chưa có lịch sử xem</h3></div>`;
+      return;
+    }
+
+    historyGrid.innerHTML = '';
+    history.forEach(movie => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.onclick = () => openModal(movie);
+      card.innerHTML = `
+        <div class="card-img-wrap loaded">
+          <img src="${escapeHtml(movie.img)}" class="loaded" alt="${escapeHtml(movie.title)}">
+        </div>
+        <div class="card-info">
+          <div class="card-title">${escapeHtml(movie.title)}</div>
+          <div class="card-meta"><span>${movie.watchedAt}</span></div>
+        </div>
+      `;
+      historyGrid.appendChild(card);
+    });
+  }
+
+  function clearHistory() {
+    if (confirm('Xóa tất cả lịch sử xem phim?')) {
+      localStorage.removeItem('watched_history');
+      updateHistoryBadge();
+      renderHistory();
+    }
+  }
+
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('show')) closeModal(); });
+  window.addEventListener('scroll', () => { topBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
+  topBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateHistoryBadge();
+    fetchRSS();
+  });
 </script>
 
 </body>
