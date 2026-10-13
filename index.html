@@ -392,20 +392,44 @@ async function openModal(movie){addToHistory(movie);modalBody.innerHTML=`<div cl
  function play(src,btn){
   tabs.querySelectorAll('button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');
   if(window._hls){try{window._hls.destroy()}catch(_){}window._hls=null}
-  const showEmbed=()=>{player.innerHTML=`<iframe src="${esc(src.embed)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen style="width:100%;height:100%;border:0"></iframe>`};
-  if(src.m3u8){
+  clearTimeout(window._playTimer);
+  const up=u=>u&&location.protocol==='https:'?u.replace(/^http:\/\//i,'https://'):u;
+  const m3u8=up(src.m3u8),embed=up(src.embed);
+  const chain=[];if(m3u8){chain.push('hls');chain.push('native')}if(embed)chain.push('embed');
+  const info=()=>`<div class="player-status" style="position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;text-align:center;padding:14px;font-size:13px">`;
+  let step=-1;
+  const next=(why)=>{
+    clearTimeout(window._playTimer);
+    if(window._hls){try{window._hls.destroy()}catch(_){}window._hls=null}
+    step++;
+    if(step>=chain.length){
+      player.innerHTML=info()+`Không phát được nguồn này${why?` (${esc(why)})`:''}.<br>Thử tập/nguồn khác hoặc mở trực tiếp:<br>${m3u8?`<a style="color:#ff4d6d" target="_blank" rel="noopener" href="${esc(m3u8)}">Mở link m3u8</a>`:''} ${embed?`<a style="color:#ff4d6d" target="_blank" rel="noopener" href="${esc(embed)}">Mở link embed</a>`:''}</div>`;
+      return;
+    }
+    const mode=chain[step];
+    if(mode==='embed'){
+      player.innerHTML=`<iframe src="${esc(embed)}" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen style="width:100%;height:100%;border:0;background:#000"></iframe>`;
+      return;
+    }
     player.innerHTML='<video controls autoplay playsinline style="width:100%;height:100%;background:#000"></video>';
     const v=player.querySelector('video');
-    const fail=()=>{if(src.embed)showEmbed();else player.innerHTML='<div class="player-status">Không phát được nguồn này, thử nguồn/tập khác.</div>'};
-    if(window.Hls&&Hls.isSupported()){
-      const h=new Hls();window._hls=h;h.loadSource(src.m3u8);h.attachMedia(v);
-      h.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));
-      h.on(Hls.Events.ERROR,(_,data)=>{if(data.fatal){h.destroy();window._hls=null;fail()}});
-    }else if(v.canPlayType('application/vnd.apple.mpegurl')){
-      v.src=src.m3u8;v.addEventListener('error',fail,{once:true});v.play().catch(()=>{});
-    }else fail();
-  }else showEmbed();
+    let ok=false;
+    const good=()=>{ok=true;clearTimeout(window._playTimer)};
+    v.addEventListener('loadeddata',good);v.addEventListener('playing',good);
+    window._playTimer=setTimeout(()=>{if(!ok)next('hết thời gian chờ')},12000);
+    if(mode==='hls'){
+      if(window.Hls&&Hls.isSupported()){
+        const h=new Hls({enableWorker:true});window._hls=h;h.loadSource(m3u8);h.attachMedia(v);
+        h.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));
+        h.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal)next(d.details||'hls lỗi')});
+      }else next('không có hls.js');
+    }else{ // native: Chrome/Brave Android & Safari tự phát được m3u8, không bị chặn CORS
+      v.src=m3u8;v.addEventListener('error',()=>next('video lỗi'),{once:true});v.play().catch(()=>{});
+    }
+  };
+  next();
 }
+
  tabs.innerHTML='<span class="tab-label">Nguồn phát / tập:</span>'+sources.map((s,i)=>`<button class="source-tab ${i===0?'active':''}" data-i="${i}">${esc(s.name)}</button>`).join('');
  tabs.querySelectorAll('button[data-i]').forEach((b,i)=>b.onclick=()=>play(sources[i],b));play(sources[0],tabs.querySelector('button[data-i="0"]'));
  }catch(e){$('playerContainer').innerHTML=`<div class="player-status">Không lấy được thông tin phát: ${esc(e.message)}. Thử mở lại phim.</div>`;$('sourceTabs').innerHTML=''}
